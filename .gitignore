@@ -1,0 +1,11 @@
+.DS_Store
+
+# Build Outputs
+/target
+/dependency-reduced-pom.xml
+
+# Eclipse
+/.classpath
+/.project
+/.settings
+

@@ -1,0 +1,4 @@
+name: CustomRealms
+api-version: 1.17
+version: 1.0.0
+main: io.customrealms.MainPlugin
