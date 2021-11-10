@@ -69,7 +69,6 @@ public class JsPlugin {
 
                 bootstrap,
                 new Commands(this.descriptor.command_prefix),
-                new Scheduler(this.java_plugin),
                 new ServerEvents(this.java_plugin, bindgen)
 
         );
