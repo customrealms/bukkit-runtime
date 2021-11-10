@@ -22,7 +22,15 @@ class RegisteredHandlerData {
 
 public class ServerEvents implements Global {
 
+    /**
+     * The Java plugin we're running within
+     */
     private final JavaPlugin java_plugin;
+
+    /**
+     * The bindgen instance for the plugin's JavaScript runtime. It's used in order
+     * to convert server event types between the Java and JavaScript runtimes.
+     */
     private final Bindgen bindgen;
 
     private V8 runtime;
@@ -53,9 +61,16 @@ public class ServerEvents implements Global {
         this.runtime = runtime;
         this.logger = logger;
 
+        // Create the global "ServerEvents" variable
+        V8Object serverEventsObj = new V8Object(runtime);
+
         // Register global methods to allow the JavaScript code to manage event handlers
-        runtime.registerJavaMethod(this::jsRegisterEventHandler, "register_event_handler");
-        runtime.registerJavaMethod(this::jsUnregisterEventHandler, "unregister_event_handler");
+        serverEventsObj.registerJavaMethod(this::jsRegisterEventHandler, "register");
+        serverEventsObj.registerJavaMethod(this::jsUnregisterEventHandler, "unregister");
+
+        // Add the object to the runtime as a global
+        runtime.add("ServerEvents", serverEventsObj);
+        serverEventsObj.release();
 
     }
 
