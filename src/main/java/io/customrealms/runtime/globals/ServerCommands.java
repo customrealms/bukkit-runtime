@@ -129,12 +129,17 @@ public class ServerCommands implements Global {
 
             // Attempt to handle it with this handler
             boolean handled = SafeExecutor.executeSafely(() -> {
-                Object value = handler.call(null, args);
-                if (value == null) return false;
-                if (value instanceof V8Value) {
-                    return ((V8Value) value).jsEquals(true);
+                try {
+                    // Execute the handler and do a "truthy" check on the result
+                    Object value = handler.call(null, args);
+                    if (value == null) return false;
+                    if (value instanceof Number) return ((Number) value).intValue() > 0;
+                    if (value instanceof Boolean) return ((Boolean) value).booleanValue();
+                    if (!(value instanceof V8Value)) return false;
+                    return !((V8Value) value).isUndefined();
+                } catch (V8ResultUndefined ex) {
+                    return false;
                 }
-                return false;
             }, this.logger);
 
             // If it was handled, return early here
