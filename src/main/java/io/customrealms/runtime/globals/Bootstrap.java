@@ -14,7 +14,7 @@ public class Bootstrap implements Global {
     private V8Object js_handle;
 
     public void init(V8 runtime, Logger logger) {
-        runtime.registerJavaMethod(this::jsBootstrap, "_cr_bootstrap");
+        runtime.registerJavaMethod(this::jsBootstrap, "_bootstrap");
     }
 
     public void release() {}

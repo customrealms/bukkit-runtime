@@ -1,6 +1,6 @@
 class Plugin {
 
-    enable() {
+    onEnable() {
         console.log('Enabled!');
 
         let i = 0;
@@ -10,10 +10,10 @@ class Plugin {
         }, 5000);
     }
 
-    disable() {
+    onDisable() {
         console.log('Disabled!');
     }
 
 }
 
-_cr_bootstrap(new Plugin());
+_bootstrap(new Plugin());

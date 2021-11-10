@@ -1,5 +1,6 @@
 package io.customrealms.jsplugin;
 
+import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 import io.customrealms.runtime.globals.*;
@@ -68,7 +69,6 @@ public class JsPlugin {
                 new Console(),
 
                 bootstrap,
-                new Commands(this.descriptor.command_prefix),
                 new ServerEvents(this.java_plugin, bindgen)
 
         );
@@ -93,11 +93,14 @@ public class JsPlugin {
         // If there is no handle, bail out here
         if (this.js_handle == null) return;
 
+        // Make sure the is actually an onEnable function to be called
+        if (js_handle.getType("onEnable") != V8.V8_FUNCTION) return;
+
         // Safely execute the function
         SafeExecutor.executeSafely(() -> {
 
             // Execute the enable function on the handle
-            this.js_handle.executeVoidFunction("enable", null);
+            this.js_handle.executeVoidFunction("onEnable", null);
 
         }, this.runtime.getLogger());
 
@@ -111,11 +114,14 @@ public class JsPlugin {
         // If there is no handle, bail out here
         if (this.js_handle == null) return;
 
+        // Make sure the is actually an onDisable function to be called
+        if (js_handle.getType("onDisable") != V8.V8_FUNCTION) return;
+
         // Safely execute the function
         SafeExecutor.executeSafely(() -> {
 
             // Execute the enable function on the handle
-            this.js_handle.executeVoidFunction("disable", null);
+            this.js_handle.executeVoidFunction("onDisable", null);
 
         }, this.runtime.getLogger());
 
@@ -152,6 +158,9 @@ public class JsPlugin {
         // If there is no runtime handle
         if (this.js_handle == null) return false;
 
+        // If the plugin doesn't have a command handler
+        if (this.js_handle.getType("onCommand") != V8.V8_FUNCTION) return;
+
         // Create the arguments
         V8Array args = new V8Array(this.js_handle.getRuntime());
         args.push(player.getUniqueId().toString());
@@ -161,7 +170,7 @@ public class JsPlugin {
         boolean handled = SafeExecutor.executeSafely(() -> {
 
             // Attempt the command in the runtime
-            return this.js_handle.executeBooleanFunction("attempt_command", args);
+            return this.js_handle.executeBooleanFunction("onCommand", args);
 
         }, this.runtime.getLogger());
 
