@@ -40,7 +40,7 @@ public class ServerCommands implements Global {
         serverEventsObj.registerJavaMethod(this::jsUnregisterCommandHandler, "unregister");
 
         // Add the object to the runtime as a global
-        runtime.add("ServerCommands", serverEventsObj);
+        runtime.add("BukkitCommands", serverEventsObj);
         serverEventsObj.release();
 
     }
@@ -128,13 +128,13 @@ public class ServerCommands implements Global {
             if (handler == null || handler.isReleased()) continue;
 
             // Attempt to handle it with this handler
-            boolean handled = SafeExecutor.executeSafely(() -> {
+            Boolean handled = SafeExecutor.executeSafely(() -> {
                 try {
                     // Execute the handler and do a "truthy" check on the result
                     Object value = handler.call(null, args);
                     if (value == null) return false;
                     if (value instanceof Number) return ((Number) value).intValue() > 0;
-                    if (value instanceof Boolean) return ((Boolean) value).booleanValue();
+                    if (value instanceof Boolean) return (Boolean) value;
                     if (!(value instanceof V8Value)) return false;
                     return !((V8Value) value).isUndefined();
                 } catch (V8ResultUndefined ex) {
@@ -143,11 +143,10 @@ public class ServerCommands implements Global {
             }, this.logger);
 
             // If it was handled, return early here
-            if (handled) {
+            if (handled != null && handled) {
                 if (!args.isReleased()) args.release();
                 return true;
             }
-
 
         }
 

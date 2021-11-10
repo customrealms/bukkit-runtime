@@ -69,7 +69,7 @@ public class ServerEvents implements Global {
         serverEventsObj.registerJavaMethod(this::jsUnregisterEventHandler, "unregister");
 
         // Add the object to the runtime as a global
-        runtime.add("ServerEvents", serverEventsObj);
+        runtime.add("BukkitEvents", serverEventsObj);
         serverEventsObj.release();
 
     }

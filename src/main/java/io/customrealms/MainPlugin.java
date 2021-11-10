@@ -8,6 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import io.customrealms.controller.Controller;
 
+import java.io.File;
+
 /**
  * MainPlugin is the main JavaPlugin instance which serves as the entrypoint that wraps around
  * a CustomRealms JavaScript plugin
