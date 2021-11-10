@@ -26,9 +26,10 @@ public class Bootstrap implements Global {
     public void jsBootstrap(V8Object receiver, V8Array args) {
 
         // If the arguments are zero length, return early
-        if (args == null || args.length() < 1) {
-            return;
-        }
+        if (args == null || args.length() < 1) return;
+
+        // If the function has already been called
+        if (this.js_handle != null) return;
 
         // Get the constructor function to call
         this.js_handle = args.getObject(0);
