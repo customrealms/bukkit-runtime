@@ -1,11 +1,7 @@
 package io.customrealms.jsplugin;
 
-import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Object;
 import io.customrealms.runtime.globals.*;
 import io.customrealms.runtime.Runtime;
-import io.customrealms.runtime.SafeExecutor;
 import io.customrealms.runtime.bindgen.Bindgen;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,7 +13,7 @@ public class JsPlugin {
     private final String source_code;
 
     private Runtime runtime;
-    private V8Object js_handle;
+    private ServerCommands server_commands;
 
     public JsPlugin(
             JavaPlugin java_plugin,
@@ -40,20 +36,9 @@ public class JsPlugin {
         // Create the runtime
         this.runtime = new Runtime(/* logger */);
 
-        // Create the bindgen global separately, since we need to reference it later
-        Bindgen bindgen = new Bindgen(/* new Class<?>[]{
-                Player.class,
-                Server.class,
-                Plugin.class,
-                Bukkit.class,
-                World.class,
-                Location.class,
-                Note.class,
-                Note.Tone.class
-        }*/ null);
-
-        // Create a bootstrap global
-        Bootstrap bootstrap = new Bootstrap();
+        // Create some globals separately, since we need to reference them later
+        Bindgen bindgen = new Bindgen(null);
+        this.server_commands = new ServerCommands();
 
         // Register all the globals
         this.runtime.addGlobal(
@@ -68,20 +53,13 @@ public class JsPlugin {
                 // console.log, console.warn, console.error
                 new Console(),
 
-                bootstrap,
-                new ServerEvents(this.java_plugin, bindgen)
+                // Allow the JavaScript runtime to listen for server events
+                new ServerEvents(this.java_plugin, bindgen),
+
+                // Allow the JavaScript runtime to listen for commands
+                this.server_commands
 
         );
-
-        // Run the source code of the plugin
-        this.runtime.executeSafely(
-                "'use strict';\n" + this.source_code,
-                this.descriptor.name,
-                1
-        );
-
-        // Check if the bootstrap global yielded a handle
-        this.js_handle = bootstrap.getHandle();
 
     }
 
@@ -90,19 +68,12 @@ public class JsPlugin {
      */
     public void enable() {
 
-        // If there is no handle, bail out here
-        if (this.js_handle == null) return;
-
-        // Make sure the is actually an onEnable function to be called
-        if (js_handle.getType("onEnable") != V8.V8_FUNCTION) return;
-
-        // Safely execute the function
-        SafeExecutor.executeSafely(() -> {
-
-            // Execute the enable function on the handle
-            this.js_handle.executeVoidFunction("onEnable", null);
-
-        }, this.runtime.getLogger());
+        // Run the source code of the plugin
+        this.runtime.executeSafely(
+                "'use strict';\n" + this.source_code,
+                this.descriptor.name,
+                1
+        );
 
     }
 
@@ -111,19 +82,19 @@ public class JsPlugin {
      */
     public void disable() {
 
-        // If there is no handle, bail out here
-        if (this.js_handle == null) return;
-
-        // Make sure the is actually an onDisable function to be called
-        if (js_handle.getType("onDisable") != V8.V8_FUNCTION) return;
-
-        // Safely execute the function
-        SafeExecutor.executeSafely(() -> {
-
-            // Execute the enable function on the handle
-            this.js_handle.executeVoidFunction("onDisable", null);
-
-        }, this.runtime.getLogger());
+//        // If there is no handle, bail out here
+//        if (this.js_handle == null) return;
+//
+//        // Make sure the is actually an onDisable function to be called
+//        if (js_handle.getType("onDisable") != V8.V8_FUNCTION) return;
+//
+//        // Safely execute the function
+//        SafeExecutor.executeSafely(() -> {
+//
+//            // Execute the enable function on the handle
+//            this.js_handle.executeVoidFunction("onDisable", null);
+//
+//        }, this.runtime.getLogger());
 
     }
 
@@ -132,11 +103,11 @@ public class JsPlugin {
      */
     public void destroy() {
 
-        // Release the plugin handle
-        if (this.js_handle != null) {
-            this.js_handle.release();
-            this.js_handle = null;
-        }
+//        // Release the plugin handle
+//        if (this.js_handle != null) {
+//            this.js_handle.release();
+//            this.js_handle = null;
+//        }
 
         // Release the runtime
         if (this.runtime != null) {
@@ -154,32 +125,8 @@ public class JsPlugin {
      * @return true if the message was handled
      */
     public boolean attemptCommand(Player player, String message) {
-
-        // If there is no runtime handle
-        if (this.js_handle == null) return false;
-
-        // If the plugin doesn't have a command handler
-        if (this.js_handle.getType("onCommand") != V8.V8_FUNCTION) return false;
-
-        // Create the arguments
-        V8Array args = new V8Array(this.js_handle.getRuntime());
-        args.push(player.getUniqueId().toString());
-        args.push(message);
-
-        // Safely execute the function
-        boolean handled = SafeExecutor.executeSafely(() -> {
-
-            // Attempt the command in the runtime
-            return this.js_handle.executeBooleanFunction("onCommand", args);
-
-        }, this.runtime.getLogger());
-
-        // Release the arguments
-        if (!args.isReleased()) args.release();
-
-        // Return the handled status
-        return handled;
-
+        if (this.server_commands == null) return false;
+        return this.server_commands.attemptCommand(player, message);
     }
 
 }

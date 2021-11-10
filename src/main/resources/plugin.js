@@ -1,19 +1,15 @@
-class Plugin {
+console.log('Enabled!');
 
-    onEnable() {
-        console.log('Enabled!');
+let i = 0;
+setInterval(() => {
+    i++;
+    Java.resolve('org.bukkit.Bukkit').broadcastMessage('Hello #' + i);
+}, 5000);
 
-        let i = 0;
-        setInterval(() => {
-            i++;
-            Java.resolve('org.bukkit.Bukkit').broadcastMessage('Hello #' + i);
-        }, 5000);
-    }
+ServerCommands.register((uuid, message) => {
 
-    onDisable() {
-        console.log('Disabled!');
-    }
+    console.log('UUID: ', uuid);
+    console.log('MESSAGE: ', message);
+    return true;
 
-}
-
-_bootstrap(new Plugin());
+});
