@@ -159,7 +159,7 @@ public class JsPlugin {
         if (this.js_handle == null) return false;
 
         // If the plugin doesn't have a command handler
-        if (this.js_handle.getType("onCommand") != V8.V8_FUNCTION) return;
+        if (this.js_handle.getType("onCommand") != V8.V8_FUNCTION) return false;
 
         // Create the arguments
         V8Array args = new V8Array(this.js_handle.getRuntime());
