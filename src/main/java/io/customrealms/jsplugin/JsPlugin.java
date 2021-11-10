@@ -80,34 +80,12 @@ public class JsPlugin {
     /**
      * Stops running the plugin, if it is currently running
      */
-    public void disable() {
-
-//        // If there is no handle, bail out here
-//        if (this.js_handle == null) return;
-//
-//        // Make sure the is actually an onDisable function to be called
-//        if (js_handle.getType("onDisable") != V8.V8_FUNCTION) return;
-//
-//        // Safely execute the function
-//        SafeExecutor.executeSafely(() -> {
-//
-//            // Execute the enable function on the handle
-//            this.js_handle.executeVoidFunction("onDisable", null);
-//
-//        }, this.runtime.getLogger());
-
-    }
+    public void disable() {}
 
     /**
      * Destroys the plugin and releases its memory
      */
     public void destroy() {
-
-//        // Release the plugin handle
-//        if (this.js_handle != null) {
-//            this.js_handle.release();
-//            this.js_handle = null;
-//        }
 
         // Release the runtime
         if (this.runtime != null) {
