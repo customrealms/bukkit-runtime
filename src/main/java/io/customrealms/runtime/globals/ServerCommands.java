@@ -4,6 +4,7 @@ import com.eclipsesource.v8.*;
 import io.customrealms.runtime.Global;
 import io.customrealms.runtime.Logger;
 import io.customrealms.runtime.SafeExecutor;
+import io.customrealms.runtime.bindgen.Bindgen;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ public class ServerCommands implements Global {
     private V8 runtime;
     private Logger logger;
 
+    private final Bindgen bindgen;
+
     /**
      * The next handle to issue for an event listener
      */
@@ -25,6 +28,10 @@ public class ServerCommands implements Global {
      * all stored in this map, associated to the issued listener handle integer.
      */
     private HashMap<Integer, V8Function> handlers = new HashMap<>();
+
+    public ServerCommands(Bindgen bindgen) {
+        this.bindgen = bindgen;
+    }
 
     public void init(V8 runtime, Logger logger) {
 
@@ -119,11 +126,17 @@ public class ServerCommands implements Global {
         List<V8Function> handlers = new ArrayList<>(this.handlers.values());
         if (handlers.size() == 0) return false;
 
+        // Get the JavaScript wrapper value for the player
+        V8Object jsPlayer = (V8Object)this.bindgen.valueToJavaScript(player, Player.class);
+
         // Create the arguments array. Note that creating it once and reusing means
         // handler functions are able to mutate it.
         V8Array args = new V8Array(this.runtime);
-        args.push(player.getUniqueId().toString());
+        args.push(jsPlayer);
         args.push(message);
+
+        // Release the player instance
+        if (jsPlayer != null) jsPlayer.release();
 
         // Loop through the registered handlers
         for (V8Function handler : handlers) {

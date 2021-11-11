@@ -38,7 +38,7 @@ public class JsPlugin {
 
         // Create some globals separately, since we need to reference them later
         Bindgen bindgen = new Bindgen(null);
-        this.server_commands = new ServerCommands();
+        this.server_commands = new ServerCommands(bindgen);
 
         // Register all the globals
         this.runtime.addGlobal(
