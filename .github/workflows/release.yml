@@ -14,23 +14,34 @@ jobs:
     runs-on: ubuntu-latest
     name: Build the Maven Project
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      -
+        uses: actions/checkout@v2
+      -
+        uses: actions/cache@v2
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Set up JDK 11
+
+      - name: Get Release Details
+        id: get_release
+        uses: bruceadams/get-release@v1.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      -
+        name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
           java-version: '11'
           java-package: jdk
-      - name: Build Maven project
+      -
+        name: Build Maven project
         working-directory: .
         run: mvn package -P${{ matrix.os }} -PMC_${{ matrix.mc }}
-      - name: Upload Maven build output
+      -
+        name: Upload Maven build output
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
