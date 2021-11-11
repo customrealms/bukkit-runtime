@@ -1,7 +1,6 @@
 package io.customrealms.controller;
 
 import io.customrealms.jsplugin.JsPlugin;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,13 +9,14 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 public class CommandListener implements Listener {
 
     /**
-     * The chat prefix to send with commands
+     * The array of plugins that commands should be sent to
      */
-    private static final String PREFIX = ChatColor.BLACK + "[" + ChatColor.BLUE + ChatColor.BOLD + "SERVER" + ChatColor.RESET + ChatColor.BLACK + "] " + ChatColor.RESET;
-    private static final String ERROR_PREFIX = ChatColor.BLACK + "[" + ChatColor.RED + ChatColor.BOLD + "ERROR" + ChatColor.RESET + ChatColor.BLACK + "] " + ChatColor.RESET;
+    private JsPlugin[] plugins;
 
-    private final JsPlugin[] plugins;
-
+    /**
+     * Constructs a command listener instance, sending commands to a set of plugins
+     * @param plugins the plugins to pipe commands to
+     */
     public CommandListener(JsPlugin[] plugins) {
         this.plugins = plugins;
     }
@@ -36,13 +36,9 @@ public class CommandListener implements Listener {
         // Attempt to handle the command with the plugins
         boolean handled = this.attemptCommand(player, message);
 
-        // If it was not handled
-        if (!handled) {
-
-            // Send the player the message
-            player.sendMessage(CommandListener.ERROR_PREFIX + ChatColor.RED + "Unhandled command: " + ChatColor.GOLD + event.getMessage());
-
-        }
+        // If the event was handled, cancel it. Otherwise we still want to allow other plugins
+        // and the default Bukkit / Minecraft commands.
+        if (handled) event.setCancelled(true);
 
     }
 
@@ -71,6 +67,10 @@ public class CommandListener implements Listener {
         // Return the handled status
         return handled;
 
+    }
+
+    public void destroy() {
+        this.plugins = null;
     }
 
 }

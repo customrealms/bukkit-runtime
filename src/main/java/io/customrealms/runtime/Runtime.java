@@ -94,6 +94,7 @@ public class Runtime {
 
         // Release globals
         this.globals.forEach(Global::release);
+        this.globals.clear();
 
         // Release the runtime
         if (this.v8 != null && !this.v8.isReleased()) {

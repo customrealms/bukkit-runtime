@@ -63,6 +63,10 @@ public class ServerCommands implements Global {
         // Clear the map of handlers
         this.handlers.clear();
 
+        // Set all the members to null
+        this.runtime = null;
+        this.logger = null;
+
     }
 
     public Integer jsRegisterCommandHandler(V8Object receiver, V8Array args) {

@@ -3,12 +3,9 @@ package io.customrealms;
 import io.customrealms.jsplugin.JsPlugin;
 import io.customrealms.jsplugin.JsPluginDescriptor;
 import io.customrealms.resource.Resource;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import io.customrealms.controller.Controller;
-
-import java.io.File;
 
 /**
  * MainPlugin is the main JavaPlugin instance which serves as the entrypoint that wraps around
@@ -24,13 +21,6 @@ public class MainPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
-
-
-
-    }
-
-    @Override
-    public void onEnable() {
 
         // Define the descriptor of the plugin
         JsPluginDescriptor descriptor = new JsPluginDescriptor();
@@ -54,8 +44,13 @@ public class MainPlugin extends JavaPlugin {
                 plugin
         );
 
+    }
+
+    @Override
+    public void onEnable() {
+
         // Enable the controller
-        this.controller.enable();
+        if (this.controller != null) this.controller.enable();
 
     }
 
@@ -63,7 +58,10 @@ public class MainPlugin extends JavaPlugin {
     public void onDisable() {
 
         // Disable the controller
-        this.controller.disable();
+        if (this.controller != null) {
+            this.controller.disable();
+            this.controller = null;
+        }
 
     }
 

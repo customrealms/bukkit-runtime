@@ -33,7 +33,7 @@ public class Timeout implements Global {
     /**
      * The Bukkit plugin instance
      */
-    private final JavaPlugin plugin;
+    private JavaPlugin plugin;
 
     /**
      * Output destination for error logs
@@ -256,6 +256,11 @@ public class Timeout implements Global {
             this.releaseHandle(handle);
 
         }
+
+        // Set all the members to null
+        this.logger = null;
+        this.plugin = null;
+
     }
 
 }

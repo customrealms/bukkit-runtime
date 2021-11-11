@@ -93,6 +93,10 @@ public class ServerEvents implements Global {
         // Clear the map of handlers
         this.handlers.clear();
 
+        // Set all the members to null
+        this.runtime = null;
+        this.logger = null;
+
     }
 
     @SuppressWarnings("unchecked")

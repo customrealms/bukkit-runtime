@@ -21,12 +21,12 @@ public class Controller {
      * The JavaPlugin in which we're running (since all Java plugins are operating in the memory space
      * of the CraftBukkit / Spigot / etc. process)
      */
-    private final JavaPlugin java_plugin;
+    private JavaPlugin java_plugin;
 
     /**
      * Array of plugins being operated by this Controller
      */
-    private final JsPlugin[] plugins;
+    private JsPlugin[] plugins;
 
     /**
      * Constructs a Controller instance that operates a specific set of plugins within the given JavaPlugin
@@ -68,19 +68,19 @@ public class Controller {
      */
     public void disable() {
 
+        // Destroy the command listener
+        this.command_listener.destroy();
+        this.command_listener = null;
+
         // Disable all of the plugins
         for (JsPlugin plugin : this.plugins) {
             plugin.disable();
-        }
-
-    }
-
-    public void destroy() {
-
-        // Destroy all of the plugins
-        for (JsPlugin plugin : this.plugins) {
             plugin.destroy();
         }
+
+        // Let go of references
+        this.plugins = null;
+        this.java_plugin = null;
 
     }
 

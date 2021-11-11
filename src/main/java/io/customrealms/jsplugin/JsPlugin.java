@@ -8,9 +8,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class JsPlugin {
 
-    private final JavaPlugin java_plugin;
-    private final JsPluginDescriptor descriptor;
-    private final String source_code;
+    private JavaPlugin java_plugin;
+    private JsPluginDescriptor descriptor;
+    private String source_code;
 
     private Runtime runtime;
     private ServerCommands server_commands;
@@ -91,7 +91,13 @@ public class JsPlugin {
         if (this.runtime != null) {
             this.runtime.release();
             this.runtime = null;
+            this.server_commands = null;
         }
+
+        // Release all the values
+        this.java_plugin = null;
+        this.descriptor = null;
+        this.source_code = null;
 
     }
 
