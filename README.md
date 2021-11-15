@@ -1,6 +1,6 @@
 # bukkit-runtime
 
-<img src="https://github.com/customrealms/brand/blob/master/icon-solid/icon-solid.png" />
+<img src="https://github.com/customrealms/brand/blob/master/icon-solid/icon-solid.png" width="200" alt="CustomRealms Logo" />
 
 This is a Bukkit plugin, written in Java, that can execute CustomRealms plugins that are written in JavaScript.
 
