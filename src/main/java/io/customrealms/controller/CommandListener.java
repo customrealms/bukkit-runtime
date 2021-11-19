@@ -24,9 +24,6 @@ public class CommandListener implements Listener {
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent event) {
 
-        // Cancel the default Bukkit / Minecraft events
-        event.setCancelled(true);
-
         // Get the command message
         String message = event.getMessage().trim();
 
