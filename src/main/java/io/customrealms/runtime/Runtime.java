@@ -23,21 +23,13 @@ public class Runtime {
     private final ArrayList<Global> globals = new ArrayList<>();
 
     /**
-     * Constructs a new Runtime instance using the default logger
-     */
-    public Runtime() {
-        this(null);
-    }
-
-    /**
      * Constructs a new Runtime instance with a custom logger
      * @param logger the logger to use for the runtime console and errors
      */
     public Runtime(Logger logger) {
 
-        // Save the logger. If the logger provided was null, construct
-        // a default logger instance instead
-        this.logger = logger == null ? new DefaultLogger() : logger;
+        // Save the logger
+        this.logger = logger;
 
         // Create the new V8 runtime instance
         this.v8 = V8.createV8Runtime("global");
