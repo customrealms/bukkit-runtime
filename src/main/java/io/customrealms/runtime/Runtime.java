@@ -95,7 +95,7 @@ public class Runtime {
             long referenceCount = this.v8.getObjectReferenceCount();
 
             // If there is more than just the runtime
-            if (referenceCount > 1) System.out.println("Ref count: " + referenceCount);
+            if (referenceCount > 1) this.logger.log(Logger.LogType.WARNING, "Ref count: " + referenceCount);
 
             try {
 
