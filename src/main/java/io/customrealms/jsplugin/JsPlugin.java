@@ -1,5 +1,7 @@
 package io.customrealms.jsplugin;
 
+import io.customrealms.runtime.DefaultLogger;
+import io.customrealms.runtime.Logger;
 import io.customrealms.runtime.globals.*;
 import io.customrealms.runtime.Runtime;
 import io.customrealms.runtime.bindgen.Bindgen;
@@ -33,8 +35,11 @@ public class JsPlugin {
 
     private void setup() {
 
+        // Create a logger instance that will be used within the JavaScript runtime
+        Logger logger = new DefaultLogger(this.java_plugin.getLogger());
+
         // Create the runtime
-        this.runtime = new Runtime(/* logger */);
+        this.runtime = new Runtime(logger);
 
         // Create some globals separately, since we need to reference them later
         Bindgen bindgen = new Bindgen(null);
