@@ -45,6 +45,11 @@ public class Bindgen implements Global {
     private V8 v8;
 
     /**
+     * The logger for the runtime
+     */
+    private Logger logger;
+
+    /**
      * The root bindings object, accessible in the runtime as Java
      */
     private V8Object bindings_root;
@@ -67,7 +72,8 @@ public class Bindgen implements Global {
     @Override
     public void init(V8 v8, Logger logger) {
 
-        // Save the V8 handle
+        // Save the V8 handle and logger
+        this.logger = logger;
         this.v8 = v8;
 
         // Generate the root container object for the bindings
@@ -261,7 +267,7 @@ public class Bindgen implements Global {
 
             // If there is no callable constructor
             if (ctor == null) {
-                System.err.println("No matching constructor not found!");
+                this.logger.log(Logger.LogType.ERROR, "Matching constructor not found!");
                 return null;
             }
 
@@ -282,7 +288,7 @@ public class Bindgen implements Global {
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 
                 // Log the error
-                System.err.println("Constructor exists, but failed to construct instance.");
+                this.logger.log(Logger.LogType.ERROR, "Constructor exists, but failed to construct instance.");
 
             }
 
@@ -378,14 +384,14 @@ public class Bindgen implements Global {
 
         // If there is no matching method
         if (m == null) {
-            System.err.println("NO METHOD FOUND:");
-            System.err.println("\t" + clazz.getCanonicalName());
-            System.err.println("\t" + methodName);
+            this.logger.log(Logger.LogType.ERROR, "NO METHOD FOUND:");
+            this.logger.log(Logger.LogType.ERROR, "\t" + clazz.getCanonicalName());
+            this.logger.log(Logger.LogType.ERROR, "\t" + methodName);
             for (Object arg : javaArgs) {
-                if (arg == null) System.err.println("\t - null");
-                else System.err.println("\t - " + arg.getClass().getCanonicalName());
+                if (arg == null) this.logger.log(Logger.LogType.ERROR, "\t - null");
+                else this.logger.log(Logger.LogType.ERROR, "\t - " + arg.getClass().getCanonicalName());
             }
-            System.err.println();
+            this.logger.log(Logger.LogType.ERROR, "");
             return null;
         }
 
@@ -440,7 +446,7 @@ public class Bindgen implements Global {
         V8Object jsClassFn = this.boundClasses.get(classPath);
         if (jsClassFn == null) return null;
         if (jsClassFn.isReleased()) {
-            System.err.println("Error constructing bound Java instance. Class function has already been released: " + classPath);
+            this.logger.log(Logger.LogType.ERROR, "Error constructing bound Java instance. Class function has already been released: " + classPath);
             // return null;
         }
 
