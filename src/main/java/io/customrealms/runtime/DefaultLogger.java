@@ -12,13 +12,6 @@ public class DefaultLogger implements Logger {
     private java.util.logging.Logger underlying_logger;
 
     /**
-     * Constructs a new logger that uses the default global logger instance
-     */
-    public DefaultLogger() {
-        this.underlying_logger = java.util.logging.Logger.getGlobal();
-    }
-
-    /**
      * Constructs a new logger that uses a specific underlying logger instance
      * @param underlying_logger the logger instance to call into
      */
@@ -32,7 +25,7 @@ public class DefaultLogger implements Logger {
      * @param ex the exception that was thrown
      */
     public void logUnhandledException(V8ScriptExecutionException ex) {
-        System.err.println(ex.getMessage());
+        this.underlying_logger.log(Level.SEVERE, ex.getMessage());
     }
 
     /**
