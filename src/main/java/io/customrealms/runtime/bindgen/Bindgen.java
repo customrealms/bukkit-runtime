@@ -54,21 +54,6 @@ public class Bindgen implements Global {
      */
     private V8Object bindings_root;
 
-    /**
-     * The array of classes that should be eagerly bound to the V8 runtime during
-     * initialization. In theory, this isn't needed, and will likely be removed in the
-     * near future.
-     */
-    private final Class<?>[] classes_to_bind;
-
-    /**
-     * Constructs a new Bindgen instance with an array of classes to eagerly bind
-     * @param classes_to_bind the array of classes to bind
-     */
-    public Bindgen(Class<?>[] classes_to_bind) {
-        this.classes_to_bind = classes_to_bind;
-    }
-
     @Override
     public void init(V8 v8, Logger logger) {
 
@@ -79,9 +64,6 @@ public class Bindgen implements Global {
         // Generate the root container object for the bindings
         this.bindings_root = new V8Object(v8);
         v8.add("Java", bindings_root);
-
-        // Generate the eager class bindings
-        this.generateBindings(this.classes_to_bind, true);
 
         // Add a function to generate bindings on-the-fly
         this.bindings_root.registerJavaMethod(this::jsResolve, "resolve");
