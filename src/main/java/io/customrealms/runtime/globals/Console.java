@@ -3,7 +3,6 @@ package io.customrealms.runtime.globals;
 import com.eclipsesource.v8.*;
 import io.customrealms.runtime.Global;
 import io.customrealms.runtime.Logger;
-import io.customrealms.runtime.bindgen.Bindgen;
 import io.customrealms.runtime.bindgen.ClassBindingGenerator;
 import org.bukkit.ChatColor;
 

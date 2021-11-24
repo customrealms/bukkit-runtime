@@ -1,7 +1,6 @@
 package io.customrealms.runtime.bindgen;
 
 import java.lang.reflect.Executable;
-import java.net.Proxy;
 import java.util.ArrayList;
 
 public class MethodFinder {
