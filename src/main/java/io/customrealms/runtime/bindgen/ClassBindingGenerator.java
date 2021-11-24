@@ -5,7 +5,6 @@ import com.eclipsesource.v8.utils.V8ObjectUtils;
 import io.customrealms.runtime.Logger;
 
 import java.lang.reflect.*;
-import java.net.Proxy;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -18,47 +17,6 @@ public class ClassBindingGenerator {
      * The key to use in bound objects
      */
     public static final String JAVA_SHADOW_KEY = "[[Java]]";
-
-    /**
-     * Array of all the primitive types. These primitives map directly to a JavaScript type, so
-     * we don't want to wrap them with bindings. We can just pass them directly between the
-     * Java and JS runtimes.
-     */
-    private static final Class<?>[] PRIMITIVES = {
-            String.class,
-            Integer.class,
-            int.class,
-            Double.class,
-            double.class,
-            Float.class,
-            float.class,
-            Long.class,
-            long.class,
-            Short.class,
-            short.class,
-            Boolean.class,
-            boolean.class,
-            Byte.class,
-            byte.class,
-            Character.class,
-            char.class,
-            Void.class,
-            void.class,
-            Object.class,
-            Proxy.class
-    };
-
-    /**
-     * Checks if a given value is of a primitive type
-     * @param value the value to check
-     * @return whether or not the value is a primitive
-     */
-    private static boolean is_value_primitive(Object value) {
-        for (Class<?> clazz : ClassBindingGenerator.PRIMITIVES) {
-            if (clazz.isInstance(value)) return true;
-        }
-        return false;
-    }
 
     /**
      * The V8 runtime handle
@@ -145,11 +103,7 @@ public class ClassBindingGenerator {
 
         // Primitive types don't get wrapped in any special bindings since the JS runtime
         // already inherently understands them.
-        for (Class<?> x : ClassBindingGenerator.PRIMITIVES) {
-            if (c.equals(x)) {
-                return null;
-            }
-        }
+        if (MethodFinder.isPrimitiveType(c)) return null;
 
         // For now, we're just treating enums as classes, and it seems to work fine
         // if (c.isEnum()) return;
@@ -506,7 +460,7 @@ public class ClassBindingGenerator {
     public Object wrap(Object value, Class<?> clazz) {
 
         // If the value is null or a primitive, return it as-is
-        if (value == null || ClassBindingGenerator.is_value_primitive(value)) return value;
+        if (value == null || MethodFinder.isValuePrimitive(value)) return value;
 
         // If the value is an array, we need to fill a V8 array with the values
         if (clazz.isArray()) {
@@ -556,7 +510,7 @@ public class ClassBindingGenerator {
     public Object unwrap(Object value) {
 
         // If the value is null or a primitive, return it as-is
-        if (value == null || ClassBindingGenerator.is_value_primitive(value)) return value;
+        if (value == null || MethodFinder.isValuePrimitive(value)) return value;
 
         // If it's an array, we need to construct a new array and unwrap all the contained values
         if (value instanceof V8Array) {

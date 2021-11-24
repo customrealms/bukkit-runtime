@@ -1,16 +1,44 @@
 package io.customrealms.runtime.bindgen;
 
 import java.lang.reflect.Executable;
+import java.net.Proxy;
 import java.util.ArrayList;
 
 public class MethodFinder {
 
     /**
-     * Determines if the provided type is numeric
-     * @param clazz the class to test
+     * Array of all the primitive types. These primitives map directly to a JavaScript type, so
+     * we don't want to wrap them with bindings. We can just pass them directly between the
+     * Java and JS runtimes.
      */
-    public static boolean isNumericType(Class<?> clazz) {
-        Class<?>[] numerics = {
+    private static final Class<?>[] PRIMITIVES = {
+            String.class,
+            Integer.class,
+            int.class,
+            Double.class,
+            double.class,
+            Float.class,
+            float.class,
+            Long.class,
+            long.class,
+            Short.class,
+            short.class,
+            Boolean.class,
+            boolean.class,
+            Byte.class,
+            byte.class,
+            Character.class,
+            char.class,
+            Void.class,
+            void.class,
+            Object.class,
+            Proxy.class
+    };
+
+    /**
+     * Array of all the numeric primitive types
+     */
+    private static final Class<?>[] NUMERICS = {
             int.class,
             short.class,
             long.class,
@@ -21,8 +49,38 @@ public class MethodFinder {
             Long.class,
             Double.class,
             Float.class
-        };
-        for (Class<?> numeric : numerics) {
+    };
+
+    /**
+     * Checks if a given class is a primitive type
+     * @param clazz the class to check
+     * @return whether or not the class is primitive
+     */
+    public static boolean isPrimitiveType(Class<?> clazz) {
+        for (Class<?> c : MethodFinder.PRIMITIVES) {
+            if (c.equals(clazz)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a given value is of a primitive type
+     * @param value the value to check
+     * @return whether or not the value is a primitive
+     */
+    public static boolean isValuePrimitive(Object value) {
+        for (Class<?> clazz : MethodFinder.PRIMITIVES) {
+            if (clazz.isInstance(value)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Determines if the provided type is numeric
+     * @param clazz the class to test
+     */
+    public static boolean isNumericType(Class<?> clazz) {
+        for (Class<?> numeric : MethodFinder.NUMERICS) {
             if (clazz.equals(numeric)) return true;
         }
         return false;
@@ -94,7 +152,7 @@ public class MethodFinder {
     /**
      * Determines which one, if any, of the methods provided are callable by the provided types
      * @param methods the methods to test
-     * @param pegs the peg vallues
+     * @param pegs the peg values
      */
     public static <T extends Executable> T findCallableMethod(T[] methods, Object[] pegs) {
 
@@ -158,23 +216,7 @@ public class MethodFinder {
     }
 
     private static boolean castBoolean(Object value) {
-
-        // Define the primitive types
-        // ArrayList<Class<?>> primitiveTypes = new ArrayList<>();
-        // primitiveTypes.add(int.class);
-        // primitiveTypes.add(short.class);
-        // primitiveTypes.add(long.class);
-        // primitiveTypes.add(double.class);
-        // primitiveTypes.add(float.class);
-
-        // Get the class we're coming from
-        // Class<?> fromClass = value.getClass();
-
-        // If the value is primitive
-        // if (primitiveTypes.contains(fromClass)) {
-
-        return int.class.cast(value).intValue() > 0;
-
+        return int.class.cast(value) > 0;
     }
 
     private static Object castNumeric(Class<?> to, Object value) {
@@ -186,14 +228,6 @@ public class MethodFinder {
         primitiveTypes.add(long.class);
         primitiveTypes.add(double.class);
         primitiveTypes.add(float.class);
-
-        // // Define the number types
-        // ArrayList<Class<?>> wrappedTypes = new ArrayList<>();
-        // primitiveTypes.add(Integer.class);
-        // primitiveTypes.add(Short.class);
-        // primitiveTypes.add(Long.class);
-        // primitiveTypes.add(Double.class);
-        // primitiveTypes.add(Float.class);
 
         // Get the class we're coming from
         Class<?> fromClass = value.getClass();
