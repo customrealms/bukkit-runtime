@@ -23,7 +23,8 @@ BukkitEvents.register('org.bukkit.event.block.BlockBreakEvent', e => {
 });
 
 BukkitCommands.register((player, message) => {
-    if (message.startsWith('/gmc')) {
-        player.setGameMode(Java.resolve('org.bukkit.GameMode'.valueOf('CREATIVE')));
+    if (message.indexOf('/gmc') === 0) {
+        player.setGameMode(Java.resolve('org.bukkit.GameMode').valueOf('CREATIVE'));
+        return true;
     }
 });
