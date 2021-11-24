@@ -133,7 +133,7 @@ public class ServerEvents implements Global {
                     if (this.bindgen == null) return;
 
                     // Get the value for the event
-                    Object jsEvent = this.bindgen.valueToJavaScript(event, eventClass);
+                    Object jsEvent = this.bindgen.class_binding_generator.wrap(event, eventClass);
 
                     // Create the array of arguments
                     V8Array argsIn = new V8Array(this.runtime);

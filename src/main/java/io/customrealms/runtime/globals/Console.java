@@ -4,6 +4,7 @@ import com.eclipsesource.v8.*;
 import io.customrealms.runtime.Global;
 import io.customrealms.runtime.Logger;
 import io.customrealms.runtime.bindgen.Bindgen;
+import io.customrealms.runtime.bindgen.ClassBindingGenerator;
 import org.bukkit.ChatColor;
 
 import java.io.ByteArrayOutputStream;
@@ -197,11 +198,10 @@ public class Console implements Global {
         }
 
         // Get all of the keys in the object
-        ArrayList<String> keys = new ArrayList<String>(Arrays.asList(object.getKeys()));
+        ArrayList<String> keys = new ArrayList<>(Arrays.asList(object.getKeys()));
 
         // Remove keys that should be hidden
-        keys.remove(Bindgen.JAVA_SHADOW_KEY);
-        keys.remove("_java");
+        keys.remove(ClassBindingGenerator.JAVA_SHADOW_KEY);
 
         // If we're past level 5, summarize it
         if (depth >= 5) return "{Object of " + keys.size() + "}";
@@ -210,7 +210,7 @@ public class Console implements Global {
         final String separator = keys.size() >= 10 ? ",\n" : ", ";
 
         // Create the output string
-        StringBuilder output = new StringBuilder("");
+        StringBuilder output = new StringBuilder();
 
         try {
 

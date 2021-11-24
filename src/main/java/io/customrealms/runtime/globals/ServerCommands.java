@@ -13,9 +13,19 @@ import java.util.List;
 
 public class ServerCommands implements Global {
 
+    /**
+     * The JavaScript runtime this global is applies to
+     */
     private V8 runtime;
+
+    /**
+     * The logger for the runtime
+     */
     private Logger logger;
 
+    /**
+     * The bindings generator global, which is used to convert
+     */
     private final Bindgen bindgen;
 
     /**
@@ -127,7 +137,7 @@ public class ServerCommands implements Global {
         if (handlers.size() == 0) return false;
 
         // Get the JavaScript wrapper value for the player
-        V8Object jsPlayer = (V8Object)this.bindgen.valueToJavaScript(player, Player.class);
+        V8Object jsPlayer = (V8Object)this.bindgen.class_binding_generator.wrap(player, Player.class);
 
         // Create the arguments array. Note that creating it once and reusing means
         // handler functions are able to mutate it.
