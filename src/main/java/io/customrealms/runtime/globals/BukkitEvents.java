@@ -33,7 +33,14 @@ public class BukkitEvents implements Global {
      */
     private final Bindgen bindgen;
 
+    /**
+     * The runtime this global is operating within
+     */
     private V8 runtime;
+
+    /**
+     * The logger for the runtime
+     */
     private Logger logger;
 
     /**
@@ -110,20 +117,24 @@ public class BukkitEvents implements Global {
         registered_handle.listener = new Listener() {};
         registered_handle.func = (V8Function) args.get(1);
 
+        // Resolve the class for the event type classpath
+        Class eventClass;
         try {
+            eventClass = Class.forName(eventClassName);
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+            return null;
+        }
 
-            // Get the event class
-            Class eventClass = Class.forName(eventClassName);
+        // Create the listener handle instance
+        int handle = this.nextListenerHandle;
+        this.nextListenerHandle++;
 
-            // Create the listener handle instance
-            int handle = this.nextListenerHandle;
-            this.nextListenerHandle++;
+        // Store the handler in the map
+        this.handlers.put(handle, registered_handle);
 
-            // Store the handler in the map
-            this.handlers.put(handle, registered_handle);
-
-            // Register the event handler
-            Bukkit.getPluginManager().registerEvent(
+        // Register the event handler
+        Bukkit.getPluginManager().registerEvent(
                 eventClass,
                 registered_handle.listener,
                 EventPriority.NORMAL,
@@ -147,45 +158,22 @@ public class BukkitEvents implements Global {
                         ((V8Value)jsEvent).release();
                     }
 
-                    try {
-
-                        // Run the code safely
-                        SafeExecutor.executeSafely(() -> {
-
-                            // If the handle or its function are null
-                            if (registered_handle.func == null) return;
-
-                            // Call the event
+                    // Execute the handler function safely
+                    SafeExecutor.executeSafely(() -> {
+                        if (registered_handle.func != null) {
                             registered_handle.func.call(null, argsIn);
+                        }
+                    }, this.logger);
 
-                        }, this.logger);
-
-                    } catch (V8RuntimeException ex) {
-
-                        // Log the error
-                        ex.printStackTrace();
-
-                    }
-
-                    // Release the arguments
+                    // Release the arguments array
                     argsIn.release();
 
                 },
                 this.java_plugin
-            );
+        );
 
-            // Return the handle
-            return handle;
-
-        } catch (ClassNotFoundException ex) {
-
-            // Print the exception
-            ex.printStackTrace();
-
-        }
-
-        // Return something to make J2V8 happy
-        return null;
+        // Return the handle
+        return handle;
 
     }
 
