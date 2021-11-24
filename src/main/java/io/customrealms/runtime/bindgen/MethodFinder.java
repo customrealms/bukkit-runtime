@@ -31,8 +31,6 @@ public class MethodFinder {
             char.class,
             Void.class,
             void.class,
-            Object.class,
-            Proxy.class
     };
 
     /**

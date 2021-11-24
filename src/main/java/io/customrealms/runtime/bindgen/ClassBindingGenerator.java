@@ -463,7 +463,7 @@ public class ClassBindingGenerator {
         if (value == null || MethodFinder.isValuePrimitive(value)) return value;
 
         // If the value is an array, we need to fill a V8 array with the values
-        if (clazz.isArray()) {
+        if (clazz != null && clazz.isArray()) {
             V8Array output = new V8Array(this.v8);
             for (Object val : (Object[])value) this.push_jsvalue(output, val);
             return output;

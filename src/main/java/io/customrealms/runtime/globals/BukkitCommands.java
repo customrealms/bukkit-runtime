@@ -24,7 +24,8 @@ public class BukkitCommands implements Global {
     private Logger logger;
 
     /**
-     * The bindings generator global, which is used to convert
+     * The bindgen instance for the plugin's JavaScript runtime. It's used in order
+     * to convert players and other values between the Java and JavaScript runtimes.
      */
     private final Bindgen bindgen;
 

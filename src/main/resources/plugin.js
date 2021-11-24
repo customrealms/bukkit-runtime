@@ -1,6 +1,6 @@
-// setInterval(() => {
-//     Java.resolve('org.bukkit.Bukkit').getServer().getOnlinePlayers().map(p => p.sendMessage('Hey'));
-// }, 1000);
+setInterval(() => {
+    Java.resolve('org.bukkit.Bukkit').getServer().getOnlinePlayers().map(p => p.sendMessage('Hey'));
+}, 2000);
 
 // Simple example plugin that bans the player from breaking more than 1 of any block
 // type within the same 10 seconds.
