@@ -21,3 +21,9 @@ BukkitEvents.register('org.bukkit.event.block.BlockBreakEvent', e => {
         e.getPlayer().sendMessage('Temporarily banned from breaking: ' + material);
     }
 });
+
+BukkitCommands.register((player, message) => {
+    if (message.startsWith('/gmc')) {
+        player.setGameMode(Java.resolve('org.bukkit.GameMode'.valueOf('CREATIVE')));
+    }
+});
