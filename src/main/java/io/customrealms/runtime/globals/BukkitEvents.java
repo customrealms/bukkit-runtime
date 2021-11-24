@@ -20,7 +20,7 @@ class RegisteredHandlerData {
     public V8Function func;
 }
 
-public class ServerEvents implements Global {
+public class BukkitEvents implements Global {
 
     /**
      * The Java plugin we're running within
@@ -47,7 +47,7 @@ public class ServerEvents implements Global {
      */
     private HashMap<Integer, RegisteredHandlerData> handlers = new HashMap<>();
 
-    public ServerEvents(
+    public BukkitEvents(
             JavaPlugin java_plugin,
             Bindgen bindgen
     ) {

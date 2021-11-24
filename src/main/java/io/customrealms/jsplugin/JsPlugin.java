@@ -15,7 +15,7 @@ public class JsPlugin {
     private String source_code;
 
     private Runtime runtime;
-    private ServerCommands server_commands;
+    private BukkitCommands server_commands;
 
     public JsPlugin(
             JavaPlugin java_plugin,
@@ -43,7 +43,7 @@ public class JsPlugin {
 
         // Create some globals separately, since we need to reference them later
         Bindgen bindgen = new Bindgen();
-        this.server_commands = new ServerCommands(bindgen);
+        this.server_commands = new BukkitCommands(bindgen);
 
         // Register all the globals
         this.runtime.addGlobal(
@@ -59,7 +59,7 @@ public class JsPlugin {
                 new Console(),
 
                 // Allow the JavaScript runtime to listen for server events
-                new ServerEvents(this.java_plugin, bindgen),
+                new BukkitEvents(this.java_plugin, bindgen),
 
                 // Allow the JavaScript runtime to listen for commands
                 this.server_commands

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ServerCommands implements Global {
+public class BukkitCommands implements Global {
 
     /**
      * The JavaScript runtime this global is applies to
@@ -39,7 +39,7 @@ public class ServerCommands implements Global {
      */
     private HashMap<Integer, V8Function> handlers = new HashMap<>();
 
-    public ServerCommands(Bindgen bindgen) {
+    public BukkitCommands(Bindgen bindgen) {
         this.bindgen = bindgen;
     }
 
