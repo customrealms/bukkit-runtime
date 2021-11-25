@@ -28,3 +28,14 @@ BukkitCommands.register((player, message) => {
         return true;
     }
 });
+
+const http = require('http');
+const server = http.createServer((req, res) => {
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify({
+        players: Java.resolve('org.bukkit.Bukkit').getServer().getOnlinePlayers().map(p => p.getName())
+    }));
+});
+server.listen(8080);
+console.log('Server started: http://localhost:8080');
+
