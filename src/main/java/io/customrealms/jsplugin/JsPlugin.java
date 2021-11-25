@@ -11,7 +11,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class JsPlugin {
 
     private JavaPlugin java_plugin;
-    private JsPluginDescriptor descriptor;
     private String source_code;
 
     private Runtime runtime;
@@ -19,13 +18,11 @@ public class JsPlugin {
 
     public JsPlugin(
             JavaPlugin java_plugin,
-            JsPluginDescriptor descriptor,
             String source_code
     ) {
 
         // Save the values
         this.java_plugin = java_plugin;
-        this.descriptor = descriptor;
         this.source_code = source_code;
 
         // Initialize the plugin
@@ -39,7 +36,7 @@ public class JsPlugin {
         Logger logger = new DefaultLogger(this.java_plugin.getLogger());
 
         // Create the runtime
-        this.runtime = new Runtime(logger);
+        this.runtime = new Runtime(this.java_plugin, logger);
 
         // Create some globals separately, since we need to reference them later
         Bindgen bindgen = new Bindgen();
@@ -53,7 +50,7 @@ public class JsPlugin {
                 bindgen,
 
                 // setTimeout, setInterval, etc
-                new Timeout(this.java_plugin),
+                // new Timeout(this.java_plugin),
 
                 // console.log, console.warn, console.error
                 new Console(),
@@ -73,12 +70,17 @@ public class JsPlugin {
      */
     public void enable() {
 
-        // Run the source code of the plugin
+        // Run the source code of the plugin.
+        // We add the setInterval() to ensure the runtime always has something to do, at least
+        // every tick (in our case, every quarter-tick) so it can break out of blocking calls
+        // to pump the event loop. Without the setInterval call added here, many plugins will
+        // literally cause the whole server to crash.
         this.runtime.executeSafely(
-                "'use strict';\n" + this.source_code,
-                this.descriptor.name,
-                1
+                "'use strict';\n" + this.source_code + "\n;setInterval(() => {}, 1000/20/4);"
         );
+
+        // Start the runtime event loop
+        this.runtime.start();
 
     }
 
@@ -101,7 +103,6 @@ public class JsPlugin {
 
         // Release all the values
         this.java_plugin = null;
-        this.descriptor = null;
         this.source_code = null;
 
     }

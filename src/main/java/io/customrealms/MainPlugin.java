@@ -1,7 +1,6 @@
 package io.customrealms;
 
 import io.customrealms.jsplugin.JsPlugin;
-import io.customrealms.jsplugin.JsPluginDescriptor;
 import io.customrealms.resource.Resource;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,19 +21,12 @@ public class MainPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
 
-        // Define the descriptor of the plugin
-        JsPluginDescriptor descriptor = new JsPluginDescriptor();
-        descriptor.name = "My CustomRealms Plugin";
-        descriptor.version = "0.0.1";
-        descriptor.command_prefix = "myplugin";
-
         // Load the code bundled into the JAR file
         Resource source_code = new Resource("plugin.js");
 
         // Create the JavaScript plugin instance
         JsPlugin plugin = new JsPlugin(
                 this,
-                descriptor,
                 source_code.getStringContents()
         );
 
