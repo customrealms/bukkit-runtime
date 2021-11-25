@@ -50,9 +50,6 @@ public class Runtime {
         // Create the NodeJS runtime
         this.nodeJS = NodeJS.createNodeJS();
 
-        // Add the "use strict" to the beginning
-        this.nodeJS.getRuntime().executeVoidScript("'use strict';");
-
     }
 
     private static final long TICKS_PER_SECOND = 20;
@@ -164,8 +161,15 @@ public class Runtime {
             file.deleteOnExit();
 
             // Write the script code to the file
+            //
+            // We add the setInterval() to ensure the runtime always has something to do, at least
+            // every tick (in our case, every quarter-tick) so it can break out of blocking calls
+            // to pump the event loop. Without the setInterval call added here, many plugins will
+            // block the main thread and crash the server.
             FileWriter fw = new FileWriter(file);
+            fw.write("'use strict';\n");
             fw.write(script);
+            fw.write("\n;setInterval(() => {}, " + (Runtime.MAX_MS_PER_PUMP / 2) + ");");
             fw.close();
 
             // Execute the file in the NodeJS context. Note: the file can't be deleted until

@@ -49,12 +49,6 @@ public class JsPlugin {
                 // through the "Java" global.
                 bindgen,
 
-                // setTimeout, setInterval, etc
-                // new Timeout(this.java_plugin),
-
-                // console.log, console.warn, console.error
-                new Console(),
-
                 // Allow the JavaScript runtime to listen for server events
                 new BukkitEvents(this.java_plugin, bindgen),
 
@@ -71,13 +65,7 @@ public class JsPlugin {
     public void enable() {
 
         // Run the source code of the plugin.
-        // We add the setInterval() to ensure the runtime always has something to do, at least
-        // every tick (in our case, every quarter-tick) so it can break out of blocking calls
-        // to pump the event loop. Without the setInterval call added here, many plugins will
-        // literally cause the whole server to crash.
-        this.runtime.executeSafely(
-                "'use strict';\n" + this.source_code + "\n;setInterval(() => {}, 1000/20/4);"
-        );
+        this.runtime.executeSafely(this.source_code);
 
         // Start the runtime event loop
         this.runtime.start();
