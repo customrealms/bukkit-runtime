@@ -23,8 +23,27 @@ BukkitEvents.register('org.bukkit.event.block.BlockBreakEvent', e => {
 });
 
 BukkitCommands.register((player, message) => {
-    if (message.indexOf('/gmc') === 0) {
+    if (message.startsWith('/gmc')) {
         player.setGameMode(Java.resolve('org.bukkit.GameMode').valueOf('CREATIVE'));
+        return true;
+    } else if (message.startsWith('/gms')) {
+        player.setGameMode(Java.resolve('org.bukkit.GameMode').valueOf('SURVIVAL'));
         return true;
     }
 });
+
+const http = require('http');
+const server = http.createServer((req, res) => {
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify({
+        version: process.version,
+        players: Java.resolve('org.bukkit.Bukkit').getServer().getOnlinePlayers().map(p => p.getName()),
+        process_keys: Object.keys(process).reduce((sum, key) => {
+            sum[key] = typeof process[key];
+            return sum;
+        }, {}),
+    }));
+});
+server.listen(8080);
+console.log('Server started: http://localhost:8080');
+
