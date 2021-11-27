@@ -118,9 +118,9 @@ public class BukkitEvents implements Global {
         registered_handle.func = (V8Function) args.get(1);
 
         // Resolve the class for the event type classpath
-        Class eventClass;
+        Class<Event> eventClass;
         try {
-            eventClass = Class.forName(eventClassName);
+            eventClass = (Class<Event>) Class.forName(eventClassName);
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
             return null;
@@ -139,6 +139,13 @@ public class BukkitEvents implements Global {
                 registered_handle.listener,
                 EventPriority.NORMAL,
                 (Listener l, Event event) -> {
+
+                    // Make sure that the event value is ACTUALLY assignable to the event class
+                    // TODO(connerdouglass) figure out why this is required. Sometimes superclasses are being received
+                    if (!eventClass.isInstance(event)) {
+                        // this.logger.log(Logger.LogType.WARNING, "Event received \"" + event.getEventName() + "\" is not of type \"" + eventClass.getSimpleName() + "\"");
+                        return;
+                    }
 
                     // If there is no runtime
                     if (this.bindgen == null) return;
