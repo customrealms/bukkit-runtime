@@ -138,7 +138,7 @@ public class BukkitCommands implements Global {
         if (handlers.size() == 0) return false;
 
         // Get the JavaScript wrapper value for the player
-        V8Object jsPlayer = (V8Object)this.bindgen.class_binding_generator.wrap(player, Player.class);
+        V8Object jsPlayer = (V8Object)this.bindgen.class_binding_generator.wrap(player);
 
         // Create the arguments array. Note that creating it once and reusing means
         // handler functions are able to mutate it.

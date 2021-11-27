@@ -198,11 +198,11 @@ public class ClassBindingGenerator {
      * @param clazz the Java class being represented in the JavaScript runtime by the constructor function
      * @return the JavaScript class constructor function
      */
-    private V8Function generate_class_constructor(Class<?> clazz) {
+    private V8Function generate_class_constructor(final Class<?> clazz) {
 
         // Create and return a function that will act as the constructor for the bound class
         // when the constructor is called within the JavaScript runtime
-        return new V8Function(this.v8, (V8Object receiver, V8Array args) -> {
+        V8Function jsClassFn = new V8Function(this.v8, (V8Object receiver, V8Array args) -> {
 
             // Convert the arguments to Java
             Object[] javaArgs = this.getJavaArgs(args);
@@ -232,7 +232,7 @@ public class ClassBindingGenerator {
                 Object instance = ctor.newInstance(castedArgs);
 
                 // Convert the instance to JavaScript
-                return this.wrap(instance, clazz);
+                return this.wrap(instance);
 
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 
@@ -243,6 +243,12 @@ public class ClassBindingGenerator {
             }
 
         });
+
+        // Set the name for the class constructor
+        jsClassFn.add("name", clazz.getName());
+
+        // Return the class constructor
+        return jsClassFn;
 
     }
 
@@ -359,7 +365,7 @@ public class ClassBindingGenerator {
             if (m.getReturnType().equals(Void.TYPE)) return null;
 
             // Otherwise, convert the returned value
-            return this.wrap(returnValue, m.getReturnType());
+            return this.wrap(returnValue);
 
         } catch (IllegalAccessException | InvocationTargetException ex) {
 
@@ -435,7 +441,7 @@ public class ClassBindingGenerator {
     private void push_jsvalue(V8Array output, Object val) {
 
         // Convert the value
-        Object jsVal = this.wrap(val, null);
+        Object jsVal = this.wrap(val);
 
         // Assign the value to the key
         if (jsVal == null) output.pushNull();
@@ -454,13 +460,15 @@ public class ClassBindingGenerator {
      * Wraps a Java value into a JavaScript instance. This effectively just passes off to
      * the `create_wrapper`, but provides support for container types (arrays, lists, maps).
      * @param value the value to wrap into a JavaScript instance
-     * @param clazz the class to use for the bindings (JavaScript prototype)
      * @return the wrapped JavaScript value for the Java value
      */
-    public Object wrap(Object value, Class<?> clazz) {
+    public Object wrap(Object value) {
 
         // If the value is null or a primitive, return it as-is
         if (value == null || MethodFinder.isValuePrimitive(value)) return value;
+
+        // If the class is null, get the class of the value
+        Class<?> clazz = value.getClass();
 
         // If the value is an array, we need to fill a V8 array with the values
         if (clazz != null && clazz.isArray()) {
@@ -482,7 +490,7 @@ public class ClassBindingGenerator {
             ((Map<?, ?>)value).keySet().forEach(k -> {
                 if (!(k instanceof String)) return;
                 Object v = ((Map<?, ?>)value).get(k);
-                Object jsVal = this.wrap(v, null);
+                Object jsVal = this.wrap(v);
                 if (jsVal == null) output.addNull((String)k);
                 else if (jsVal instanceof Integer) output.add((String)k, (Integer)jsVal);
                 else if (jsVal instanceof Boolean) output.add((String)k, (Boolean)jsVal);
@@ -560,7 +568,7 @@ public class ClassBindingGenerator {
         }
 
         // Translate the value to JavaScript
-        Object jsObj = this.wrap(obj, null);
+        Object jsObj = this.wrap(obj);
 
         // Assign the value to the key
         if (jsObj == null) jsInstance.addNull(f.getName());
