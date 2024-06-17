@@ -103,6 +103,17 @@
             </dependencies>
         </profile>
         <profile>
+            <id>MC_1.20.6</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.spigotmc</groupId>
+                    <artifactId>spigot-api</artifactId>
+                    <version>1.20.6-R0.1-SNAPSHOT</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
             <id>MC_1.17.1</id>
             <dependencies>
                 <dependency>
