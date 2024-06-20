@@ -1,0 +1,32 @@
+on: [pull_request]
+
+name: Pull Request Checks
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        mc: [1.16.4, 1.17.1, 1.20.6]
+
+    runs-on: ubuntu-latest
+    name: Build the Maven Project
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+          java-package: jdk
+
+      - name: Build Maven project
+        working-directory: .
+        run: mvn package -PMC_${{ matrix.mc }}
