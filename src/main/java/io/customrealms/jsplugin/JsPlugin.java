@@ -38,7 +38,8 @@ public class JsPlugin {
             // Add globals to the runtime
             this.server_commands,
             new BukkitEvents(this.java_plugin, logger),
-            new Scheduler(this.java_plugin, logger)
+            new Scheduler(this.java_plugin, logger),
+            new Console(logger)
         );
     }
 
