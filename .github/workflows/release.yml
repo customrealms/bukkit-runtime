@@ -8,7 +8,6 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [linux, macos, windows]
         mc: [1.16.4, 1.17.1, 1.20.6]
 
     runs-on: ubuntu-latest
@@ -39,7 +38,7 @@ jobs:
       -
         name: Build Maven project
         working-directory: .
-        run: mvn package -P${{ matrix.os }} -PMC_${{ matrix.mc }}
+        run: mvn package -PMC_${{ matrix.mc }}
       -
         name: Upload Maven build output
         uses: actions/upload-release-asset@v1
@@ -48,5 +47,5 @@ jobs:
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
           asset_path: ./target/bukkit-runtime-jar-with-dependencies.jar
-          asset_name: bukkit-runtime-${{ matrix.os }}-${{ matrix.mc }}.jar
+          asset_name: bukkit-runtime-${{ matrix.mc }}.jar
           asset_content_type: application/octet-stream

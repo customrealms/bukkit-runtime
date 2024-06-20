@@ -1,15 +1,14 @@
 package io.customrealms.runtime;
 
-import com.eclipsesource.v8.V8;
+import javax.script.Bindings;
 
 public interface Global {
 
     /**
      * Initializes the global with the runtime it will exist in
-     * @param v8 the handle to the runtime
-     * @param logger the logger to use for runtime stdout and stderr
+     * @param bindings the global bindings object to append to
      */
-    void init(V8 v8, Logger logger);
+    void init(Bindings bindings);
 
     /**
      * Releases the global from its runtime

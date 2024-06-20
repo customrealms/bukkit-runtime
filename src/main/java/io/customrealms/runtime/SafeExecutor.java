@@ -1,7 +1,5 @@
 package io.customrealms.runtime;
 
-import com.eclipsesource.v8.V8ScriptExecutionException;
-
 /**
  * SafeExecutor is a class that enables us to easily run JavaScript code in a V8 instance without
  * allowing Exceptions to escape into the Java runtime.
@@ -20,7 +18,7 @@ public class SafeExecutor {
             // Run the runnable
             return runnable.run();
 
-        } catch (V8ScriptExecutionException ex) {
+        } catch (Exception ex) {
 
             // Pass the exception to the logger
             if (logger != null) {
@@ -46,7 +44,7 @@ public class SafeExecutor {
             // Run the runnable
             runnable.run();
 
-        } catch (V8ScriptExecutionException ex) {
+        } catch (Exception ex) {
 
             // Pass the exception to the logger
             if (logger != null) {

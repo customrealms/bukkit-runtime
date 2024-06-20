@@ -4,7 +4,6 @@ import io.customrealms.runtime.DefaultLogger;
 import io.customrealms.runtime.Logger;
 import io.customrealms.runtime.globals.*;
 import io.customrealms.runtime.Runtime;
-import io.customrealms.runtime.bindgen.Bindgen;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,10 +15,7 @@ public class JsPlugin {
     private Runtime runtime;
     private BukkitCommands server_commands;
 
-    public JsPlugin(
-            JavaPlugin java_plugin,
-            String source_code
-    ) {
+    public JsPlugin(JavaPlugin java_plugin, String source_code) {
 
         // Save the values
         this.java_plugin = java_plugin;
@@ -31,32 +27,19 @@ public class JsPlugin {
     }
 
     private void setup() {
-
         // Create a logger instance that will be used within the JavaScript runtime
         Logger logger = new DefaultLogger(this.java_plugin.getLogger());
 
-        // Create the runtime
-        this.runtime = new Runtime(this.java_plugin, logger);
-
         // Create some globals separately, since we need to reference them later
-        Bindgen bindgen = new Bindgen();
-        this.server_commands = new BukkitCommands(bindgen);
+        this.server_commands = new BukkitCommands(logger);
 
-        // Register all the globals
-        this.runtime.addGlobal(
-
-                // Allow the JavaScript runtime to reach into the Java world
-                // through the "Java" global.
-                bindgen,
-
-                // Allow the JavaScript runtime to listen for server events
-                new BukkitEvents(this.java_plugin, bindgen),
-
-                // Allow the JavaScript runtime to listen for commands
-                this.server_commands
-
+        // Create the runtime
+        this.runtime = new Runtime(logger,
+            // Add globals to the runtime
+            this.server_commands,
+            new BukkitEvents(this.java_plugin, logger),
+            new Scheduler(this.java_plugin, logger)
         );
-
     }
 
     /**
@@ -66,9 +49,6 @@ public class JsPlugin {
 
         // Run the source code of the plugin.
         this.runtime.executeSafely(this.source_code);
-
-        // Start the runtime event loop
-        this.runtime.start();
 
     }
 

@@ -1,7 +1,5 @@
 package io.customrealms.runtime;
 
-import com.eclipsesource.v8.V8ScriptExecutionException;
-
 import java.util.logging.Level;
 
 public class DefaultLogger implements Logger {
@@ -24,7 +22,7 @@ public class DefaultLogger implements Logger {
      * by the runtime internally
      * @param ex the exception that was thrown
      */
-    public void logUnhandledException(V8ScriptExecutionException ex) {
+    public void logUnhandledException(Exception ex) {
         this.underlying_logger.log(Level.SEVERE, ex.getMessage());
     }
 

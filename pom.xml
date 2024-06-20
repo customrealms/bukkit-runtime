@@ -30,22 +30,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <minimizeJar>false</minimizeJar>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
@@ -72,36 +56,6 @@
     </build>
 
     <profiles>
-        <profile>
-            <id>macos</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.eclipsesource.j2v8</groupId>
-                    <artifactId>j2v8_macosx_x86_64</artifactId>
-                    <version>4.6.0</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>linux</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.eclipsesource.j2v8</groupId>
-                    <artifactId>j2v8_linux_x86_64</artifactId>
-                    <version>4.6.0</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>windows</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.eclipsesource.j2v8</groupId>
-                    <artifactId>j2v8_win32_x86_64</artifactId>
-                    <version>4.6.0</version>
-                </dependency>
-            </dependencies>
-        </profile>
         <profile>
             <id>MC_1.20.6</id>
             <dependencies>
@@ -156,22 +110,15 @@
     </repositories>
 
     <dependencies>
-        <!-- <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.15.2-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency> -->
-        <!-- <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.16.4-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency> -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20090211</version>
+            <version>20231013</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>15.4</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

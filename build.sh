@@ -1,3 +1,3 @@
 #!/bin/bash
 
-mvn package -Pmacos -PMC_1.16.4
+mvn package -PMC_1.20.6

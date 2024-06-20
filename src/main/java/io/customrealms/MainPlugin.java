@@ -25,16 +25,10 @@ public class MainPlugin extends JavaPlugin {
         Resource source_code = new Resource("plugin.js");
 
         // Create the JavaScript plugin instance
-        JsPlugin plugin = new JsPlugin(
-                this,
-                source_code.getStringContents()
-        );
+        JsPlugin plugin = new JsPlugin(this, source_code.getStringContents());
 
         // Create the plugin controller
-        this.controller = new Controller(
-                this,
-                plugin
-        );
+        this.controller = new Controller(this, plugin);
 
     }
 

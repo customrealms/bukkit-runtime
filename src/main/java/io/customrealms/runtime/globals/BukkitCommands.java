@@ -1,33 +1,23 @@
 package io.customrealms.runtime.globals;
 
-import com.eclipsesource.v8.*;
 import io.customrealms.runtime.Global;
 import io.customrealms.runtime.Logger;
 import io.customrealms.runtime.SafeExecutor;
-import io.customrealms.runtime.bindgen.Bindgen;
 import org.bukkit.entity.Player;
-
+import org.openjdk.nashorn.api.scripting.JSObject;
+import javax.script.Bindings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class BukkitCommands implements Global {
-
-    /**
-     * The JavaScript runtime this global is applies to
-     */
-    private V8 runtime;
-
     /**
      * The logger for the runtime
      */
-    private Logger logger;
-
-    /**
-     * The bindgen instance for the plugin's JavaScript runtime. It's used in order
-     * to convert players and other values between the Java and JavaScript runtimes.
-     */
-    private final Bindgen bindgen;
+    private final Logger logger;
 
     /**
      * The next handle to issue for an event listener
@@ -38,90 +28,41 @@ public class BukkitCommands implements Global {
      * Each event handler registered spawns a separate Bukkit listener. They are
      * all stored in this map, associated to the issued listener handle integer.
      */
-    private HashMap<Integer, V8Function> handlers = new HashMap<>();
+    private HashMap<Integer, BiFunction<Player, String, Boolean>> handlers = new HashMap<>();
 
-    public BukkitCommands(Bindgen bindgen) {
-        this.bindgen = bindgen;
+    public BukkitCommands(Logger logger) {
+        this.logger = logger;
     }
 
-    public void init(V8 runtime, Logger logger) {
-
-        // Save the runtime and logger for later use
-        this.runtime = runtime;
-        this.logger = logger;
-
-        // Create the global "ServerCommands" variable
-        V8Object serverEventsObj = new V8Object(runtime);
-
-        // Register global methods to allow the JavaScript code to manage event handlers
-        serverEventsObj.registerJavaMethod(this::jsRegisterCommandHandler, "register");
-        serverEventsObj.registerJavaMethod(this::jsUnregisterCommandHandler, "unregister");
-
-        // Add the object to the runtime as a global
-        runtime.add("BukkitCommands", serverEventsObj);
-        serverEventsObj.release();
-
+    public void init(Bindings bindings) {
+        bindings.put("__commands_register", (Function<JSObject, Integer>)this::jsRegisterCommandHandler);
+        bindings.put("__commands_unregister", (Consumer<Integer>)this::jsUnregisterCommandHandler);
     }
 
     /**
-     * Releases all of the values tying the runtime to the plugin
+     * Releases all the values tying the runtime to the plugin
      */
     public void release() {
-
-        // Clear the listeners
-        this.handlers.values().forEach(registered_handle -> {
-
-            // Release the handler function
-            if (!registered_handle.isReleased()) {
-                registered_handle.release();
-            }
-
-        });
-
         // Clear the map of handlers
         this.handlers.clear();
-
-        // Set all the members to null
-        this.runtime = null;
-        this.logger = null;
-
     }
 
-    public Integer jsRegisterCommandHandler(V8Object receiver, V8Array args) {
-
-        // Get the handler function passed in
-        V8Function handler = (V8Function)args.getObject(0);
-
+    public Integer jsRegisterCommandHandler(JSObject handler) {
         // Create the listener handle instance
         int handle = this.nextListenerHandle;
         this.nextListenerHandle++;
 
         // Store the handler in the map
-        this.handlers.put(handle, handler);
+        this.handlers.put(handle, (Player player, String message) -> {
+            return (Boolean)handler.call(null, player, message);
+        });
 
-        // Return something to make J2V8 happy
-        return null;
-
+        // Return the handle integer
+        return handle;
     }
 
-    public Object jsUnregisterCommandHandler(V8Object receiver, V8Array args) {
-
-        // Get the handle index
-        int handle = args.getInteger(0);
-        if (!this.handlers.containsKey(handle)) return null;
-
-        // Get the registered handle
-        V8Function handler = this.handlers.get(handle);
-
-        // Remove the handle from the map
+    public void jsUnregisterCommandHandler(int handle) {
         this.handlers.remove(handle);
-
-        // Release the function
-        if (handler != null && !handler.isReleased()) handler.release();
-
-        // Return null
-        return null;
-
     }
 
     /**
@@ -134,52 +75,26 @@ public class BukkitCommands implements Global {
     public boolean attemptCommand(Player player, String message) {
 
         // Get the list of handlers
-        List<V8Function> handlers = new ArrayList<>(this.handlers.values());
-        if (handlers.size() == 0) return false;
-
-        // Get the JavaScript wrapper value for the player
-        V8Object jsPlayer = (V8Object)this.bindgen.class_binding_generator.wrap(player);
-
-        // Create the arguments array. Note that creating it once and reusing means
-        // handler functions are able to mutate it.
-        V8Array args = new V8Array(this.runtime);
-        args.push(jsPlayer);
-        args.push(message);
-
-        // Release the player instance
-        if (jsPlayer != null) jsPlayer.release();
+        List<BiFunction<Player, String, Boolean>> handlers = new ArrayList<>(this.handlers.values());
+        if (handlers.isEmpty()) return false;
 
         // Loop through the registered handlers
-        for (V8Function handler : handlers) {
+        for (BiFunction<Player, String, Boolean> handler : handlers) {
 
             // If the handler is null or released somehow, skip it
-            if (handler == null || handler.isReleased()) continue;
+            if (handler == null) continue;
 
             // Attempt to handle it with this handler
             Boolean handled = SafeExecutor.executeSafely(() -> {
-                try {
-                    // Execute the handler and do a "truthy" check on the result
-                    Object value = handler.call(null, args);
-                    if (value == null) return false;
-                    if (value instanceof Number) return ((Number) value).intValue() > 0;
-                    if (value instanceof Boolean) return (Boolean) value;
-                    if (!(value instanceof V8Value)) return false;
-                    return !((V8Value) value).isUndefined();
-                } catch (V8ResultUndefined ex) {
-                    return false;
-                }
+                // Execute the handler and do a "truthy" check on the result
+                return handler.apply(player, message);
             }, this.logger);
 
             // If it was handled, return early here
             if (handled != null && handled) {
-                if (!args.isReleased()) args.release();
                 return true;
             }
-
         }
-
-        // Release the arguments
-        if (!args.isReleased()) args.release();
 
         // It wasn't handled
         return false;

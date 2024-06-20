@@ -1,7 +1,5 @@
 package io.customrealms.runtime;
 
-import com.eclipsesource.v8.V8ScriptExecutionException;
-
 public interface Logger {
 
     /**
@@ -18,7 +16,7 @@ public interface Logger {
      * by the runtime internally
      * @param ex the exception that was thrown
      */
-    void logUnhandledException(V8ScriptExecutionException ex);
+    void logUnhandledException(Exception ex);
 
     /**
      * Logs a value from a JS plugin runtime
