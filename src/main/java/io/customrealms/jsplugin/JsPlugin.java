@@ -4,6 +4,7 @@ import io.customrealms.runtime.DefaultLogger;
 import io.customrealms.runtime.Logger;
 import io.customrealms.runtime.globals.*;
 import io.customrealms.runtime.Runtime;
+import io.customrealms.runtime.globals.Math;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,7 +40,8 @@ public class JsPlugin {
             this.server_commands,
             new BukkitEvents(this.java_plugin, logger),
             new Scheduler(this.java_plugin, logger),
-            new Console(logger)
+            new Console(logger),
+            new Math()
         );
     }
 
