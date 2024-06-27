@@ -1,54 +1,60 @@
 package io.customrealms;
 
-import io.customrealms.jsplugin.JsPlugin;
 import io.customrealms.resource.Resource;
+import io.customrealms.runtime.DefaultLogger;
+import io.customrealms.runtime.Logger;
+import io.customrealms.runtime.Runtime;
+import io.customrealms.runtime.globals.BukkitCommands;
+import io.customrealms.runtime.globals.BukkitEvents;
+import io.customrealms.runtime.globals.Console;
+import io.customrealms.runtime.globals.Math;
+import io.customrealms.runtime.globals.Scheduler;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import io.customrealms.controller.Controller;
+import java.util.logging.Level;
 
 /**
  * MainPlugin is the main JavaPlugin instance which serves as the entrypoint that wraps around
  * a CustomRealms JavaScript plugin
  */
 public class MainPlugin extends JavaPlugin {
-
     /**
-     * The controller runtime. JavaScript runtime which handles first-party CustomRealms API
-     * management of the server.
+     * The JavaScript runtime for this plugin.
      */
-    private Controller controller;
-
-    @Override
-    public void onLoad() {
-
-        // Load the code bundled into the JAR file
-        Resource source_code = new Resource("plugin.js");
-
-        // Create the JavaScript plugin instance
-        JsPlugin plugin = new JsPlugin(this, source_code.getStringContents());
-
-        // Create the plugin controller
-        this.controller = new Controller(this, plugin);
-
-    }
+    private Runtime runtime;
 
     @Override
     public void onEnable() {
+        // Create a logger instance that will be used within the JavaScript runtime
+        Logger logger = new DefaultLogger(this.getLogger());
 
-        // Enable the controller
-        if (this.controller != null) this.controller.enable();
+        // Create the runtime
+        this.runtime = new Runtime(logger,
+                // Add globals to the runtime
+                new BukkitCommands(this),
+                new BukkitEvents(this, logger),
+                new Scheduler(this, logger),
+                new Console(logger),
+                new Math()
+        );
 
+        // Load the code bundled into the JAR file
+        String source_code = new Resource("plugin.js").getStringContents();
+        if (source_code == null) {
+            this.getLogger().log(Level.SEVERE, "JavaScript source code has not been loaded!");
+            return;
+        }
+
+        // Execute the source code
+        this.runtime.executeSafely(source_code);
     }
 
     @Override
     public void onDisable() {
-
-        // Disable the controller
-        if (this.controller != null) {
-            this.controller.disable();
-            this.controller = null;
+        // Release the runtime
+        if (this.runtime != null) {
+            this.runtime.release();
+            this.runtime = null;
         }
-
     }
-
 }
