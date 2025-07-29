@@ -1,4 +1,4 @@
-package io.customrealms.runtime.globals;
+package io.projopenrealms.runtime.globals;
 
 import org.openjdk.nashorn.api.scripting.JSObject;
 

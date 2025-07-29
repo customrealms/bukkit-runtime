@@ -1,4 +1,4 @@
-package io.customrealms.runtime;
+package io.projopenrealms.runtime;
 
 import java.util.logging.Level;
 

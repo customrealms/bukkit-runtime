@@ -1,4 +1,4 @@
-package io.customrealms.runtime;
+package io.projopenrealms.runtime;
 
 public interface Logger {
 

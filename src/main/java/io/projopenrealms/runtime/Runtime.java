@@ -1,7 +1,5 @@
-package io.customrealms.runtime;
+package io.projopenrealms.runtime;
 
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import javax.script.Bindings;

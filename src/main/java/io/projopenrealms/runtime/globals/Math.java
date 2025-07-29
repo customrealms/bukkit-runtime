@@ -1,6 +1,6 @@
-package io.customrealms.runtime.globals;
+package io.projopenrealms.runtime.globals;
 
-import io.customrealms.runtime.Global;
+import io.projopenrealms.runtime.Global;
 
 import javax.script.Bindings;
 import java.util.HashMap;

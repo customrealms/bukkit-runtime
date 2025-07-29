@@ -1,14 +1,14 @@
-package io.customrealms;
+package io.projopenrealms;
 
-import io.customrealms.resource.Resource;
-import io.customrealms.runtime.DefaultLogger;
-import io.customrealms.runtime.Logger;
-import io.customrealms.runtime.Runtime;
-import io.customrealms.runtime.globals.BukkitCommands;
-import io.customrealms.runtime.globals.BukkitEvents;
-import io.customrealms.runtime.globals.Console;
-import io.customrealms.runtime.globals.Math;
-import io.customrealms.runtime.globals.Scheduler;
+import io.projopenrealms.resource.Resource;
+import io.projopenrealms.runtime.DefaultLogger;
+import io.projopenrealms.runtime.Logger;
+import io.projopenrealms.runtime.Runtime;
+import io.projopenrealms.runtime.globals.BukkitCommands;
+import io.projopenrealms.runtime.globals.BukkitEvents;
+import io.projopenrealms.runtime.globals.Console;
+import io.projopenrealms.runtime.globals.Math;
+import io.projopenrealms.runtime.globals.Scheduler;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Level;

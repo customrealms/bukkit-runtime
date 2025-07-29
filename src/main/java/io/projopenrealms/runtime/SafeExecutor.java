@@ -1,4 +1,4 @@
-package io.customrealms.runtime;
+package io.projopenrealms.runtime;
 
 /**
  * SafeExecutor is a class that enables us to easily run JavaScript code in a V8 instance without

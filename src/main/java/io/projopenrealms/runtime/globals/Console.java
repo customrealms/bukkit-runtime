@@ -1,7 +1,7 @@
-package io.customrealms.runtime.globals;
+package io.projopenrealms.runtime.globals;
 
-import io.customrealms.runtime.Global;
-import io.customrealms.runtime.Logger;
+import io.projopenrealms.runtime.Global;
+import io.projopenrealms.runtime.Logger;
 
 import javax.script.Bindings;
 import java.util.*;

@@ -1,11 +1,11 @@
-package io.customrealms.runtime.globals;
+package io.projopenrealms.runtime.globals;
 
 import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import io.customrealms.runtime.Global;
-import io.customrealms.runtime.Logger;
-import io.customrealms.runtime.SafeExecutor;
+import io.projopenrealms.runtime.Global;
+import io.projopenrealms.runtime.Logger;
+import io.projopenrealms.runtime.SafeExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
