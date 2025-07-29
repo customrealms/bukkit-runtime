@@ -2,3 +2,7 @@ name: OpenRealms
 api-version: 1.13
 version: 1.0.0
 main: io.projopenrealms.MainPlugin
+libraries:
+  - org.openjdk.nashorn:nashorn-core:15.6
+legacy-libraries:
+  - org.openjdk.nashorn:nashorn-core:15.6
