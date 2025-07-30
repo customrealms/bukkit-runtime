@@ -8,5 +8,6 @@
 /.classpath
 /.project
 /.settings
-/.idea
 
+#Intellij
+/.idea

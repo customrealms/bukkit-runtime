@@ -1,6 +1,8 @@
 package io.projopenrealms.runtime.globals;
 
 import io.projopenrealms.runtime.Global;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 
 import javax.script.Bindings;
 import java.util.HashMap;
@@ -13,7 +15,7 @@ import java.util.function.Supplier;
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math">MDN Docs</a>
  */
 public class Math implements Global {
-    public void init(Bindings bindings) {
+    public void init(Context context) {
         HashMap<String, Object> math = new HashMap<>();
         // Static properties
         math.put("E", java.lang.Math.E);
@@ -62,7 +64,8 @@ public class Math implements Global {
         math.put("tanh", (Function<Double, Double>)java.lang.Math::tanh);
         // math.put("trunc", (Function<Double, Double>)java.lang.Math::trunc);
 
-        bindings.put("Math", math);
+        Value bindings = context.getBindings("js");
+        bindings.putMember("Math", math);
     }
 
     /**

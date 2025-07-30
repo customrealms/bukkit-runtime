@@ -3,6 +3,8 @@ package io.projopenrealms.runtime.globals;
 import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+
 import io.projopenrealms.runtime.Global;
 import io.projopenrealms.runtime.Logger;
 import io.projopenrealms.runtime.SafeExecutor;
@@ -12,7 +14,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.openjdk.nashorn.api.scripting.JSObject;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
+
 import javax.script.Bindings;
 
 class RegisteredHandlerData {
@@ -48,9 +53,11 @@ public class BukkitEvents implements Global {
         this.logger = logger;
     }
 
-    public void init(Bindings bindings) {
-        bindings.put("__events_register", (BiFunction<String, JSObject, Integer>)this::jsRegisterEventHandler);
-        bindings.put("__events_unregister", (Consumer<Integer>)this::jsUnregisterEventHandler);
+    public void init(Context context) {
+        Value bindings = context.getBindings("js");
+        bindings.putMember("__events_register", (ProxyExecutable) args -> jsRegisterEventHandler(args[0].asString(), args[1]));
+
+        bindings.putMember("__events_unregister", (ProxyExecutable) args -> {jsUnregisterEventHandler(args[0].asInt());return null;});
     }
 
     /**
@@ -70,21 +77,23 @@ public class BukkitEvents implements Global {
     }
 
     @SuppressWarnings("unchecked")
-    public Integer jsRegisterEventHandler(String eventClassName, JSObject handler) {
+    public Integer jsRegisterEventHandler(String eventClassName, Value handler) {
 
         // Create the registered handle
         final RegisteredHandlerData registered_handle = new RegisteredHandlerData();
         registered_handle.listener = new Listener() {};
-        registered_handle.func = (Event event) -> {
-            handler.call(null, event);
-        };
+        if (!handler.canExecute()) {
+            Bukkit.getLogger().log(Level.SEVERE, "NO EXECUTE??");
+            return 0;
+        }
+        registered_handle.func = handler::execute;
 
         // Resolve the class for the event type classpath
         Class<Event> eventClass;
         try {
             eventClass = (Class<Event>) Class.forName(eventClassName);
         } catch (ClassNotFoundException ex) {
-            this.logger.log(Logger.LogType.ERROR, "Unrecognized event class: " + eventClassName);
+            this.logger.log(Logger.LogType.ERROR, "Unrecognized event class: " + eventClassName + "\n This could also happen because the event is not present in this version of Minecraft.");
             return null;
         }
 
@@ -126,5 +135,4 @@ public class BukkitEvents implements Global {
         // Unregister the Bukkit listener
         HandlerList.unregisterAll(registered_handle.listener);
     }
-
 }

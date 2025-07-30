@@ -1,19 +1,17 @@
 package io.projopenrealms.runtime;
 
-import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
-import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import org.graalvm.polyglot.*;
+
+import javax.script.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 public class Runtime {
     /**
      * The Nashorn script engine
      */
-    private final NashornScriptEngine engine;
+    private final Context context;
 
     /**
      * The logger to use for the runtime console and errors
@@ -33,24 +31,24 @@ public class Runtime {
         // Save the logger
         this.logger = logger;
 
-        // Create the Nashorn runtime
-        ScriptEngineManager manager = new ScriptEngineManager();
-        manager.registerEngineName("nashorn", new NashornScriptEngineFactory());
-        this.engine = (NashornScriptEngine)manager.getEngineByName("nashorn");
+        // Create the GraalJS runtime
+        Engine polyglotEngine = Engine.newBuilder()
+                .option("engine.WarnInterpreterOnly", "false")
+                .build();
+
+        this.context = Context.newBuilder("js")
+                .allowExperimentalOptions(true)
+                .allowAllAccess(true)
+                .engine(polyglotEngine)
+                .build();
 
         // Add all the globals
         this.globals.addAll(Arrays.asList(globals));
 
-        // Create the bindings for the engine
-        Bindings bindings = this.engine.createBindings();
-
         // Initialize all the globals
         for (Global global : this.globals) {
-            global.init(bindings);
+            global.init(context);
         }
-
-        // Set the engine scope bindings
-        this.engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
     }
 
     /**
@@ -60,6 +58,8 @@ public class Runtime {
         // Release globals
         this.globals.forEach(Global::release);
         this.globals.clear();
+        // Close the engine
+        this.context.close();
     }
 
     /**
@@ -68,8 +68,8 @@ public class Runtime {
      */
     private void execute(String script) {
         try {
-            this.engine.eval(script);
-        } catch (ScriptException e) {
+            this.context.eval("js", script);
+        } catch (PolyglotException e) {
             e.printStackTrace();
         }
     }
@@ -82,5 +82,4 @@ public class Runtime {
     public void executeSafely(String script) {
         SafeExecutor.executeSafely(() -> this.execute(script), this.logger);
     }
-
 }

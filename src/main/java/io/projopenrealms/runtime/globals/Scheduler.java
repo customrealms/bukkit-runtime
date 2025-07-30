@@ -5,7 +5,10 @@ import io.projopenrealms.runtime.Logger;
 import io.projopenrealms.runtime.SafeExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.openjdk.nashorn.api.scripting.JSObject;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
+
 import javax.script.Bindings;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -29,11 +32,16 @@ public class Scheduler implements Global {
         this.logger = logger;
     }
 
-    public void init(Bindings bindings) {
-        bindings.put("setTimeout", (BiFunction<JSObject, Integer, Integer>)this::jsSetTimeout);
-        bindings.put("clearTimeout", (Consumer<Integer>)this::jsClearTimeout);
-        bindings.put("setInterval", (BiFunction<JSObject, Integer, Integer>)this::jsSetInterval);
-        bindings.put("clearInterval", (Consumer<Integer>)this::jsClearInterval);
+    public void init(Context context) {
+        Value bindings = context.getBindings("js");
+
+        bindings.putMember("setTimeout", (ProxyExecutable) args -> jsSetTimeout(args[0], args[1].asInt()));
+
+        bindings.putMember("clearTimeout", (ProxyExecutable) args -> {jsClearTimeout(args[0].asInt());return null;});
+
+        bindings.putMember("setInterval", (ProxyExecutable) args -> jsSetInterval(args[0], args[1].asInt()));
+
+        bindings.putMember("clearInterval", (ProxyExecutable) args -> {jsClearInterval(args[0].asInt()); return null;});
     }
 
     /**
@@ -41,10 +49,10 @@ public class Scheduler implements Global {
      */
     public void release() {}
 
-    public Integer jsSetTimeout(JSObject handler, Integer milliseconds) {
+    public Integer jsSetTimeout(Value handler, Integer milliseconds) {
         long ticks = milliseconds / MS_PER_TICK;
         return Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
-            SafeExecutor.executeSafely(() -> handler.call(null), this.logger);
+            SafeExecutor.executeSafely(() -> handler.execute(), this.logger);
         }, ticks);
     }
 
@@ -52,10 +60,10 @@ public class Scheduler implements Global {
         Bukkit.getScheduler().cancelTask(handle);
     }
 
-    public Integer jsSetInterval(JSObject handler, Integer milliseconds) {
+    public Integer jsSetInterval(Value handler, Integer milliseconds) {
         long ticks = milliseconds / MS_PER_TICK;
         return Bukkit.getScheduler().scheduleSyncRepeatingTask(this.plugin, () -> {
-            SafeExecutor.executeSafely(() -> handler.call(null), this.logger);
+            SafeExecutor.executeSafely(() -> handler.execute(), this.logger);
         }, ticks, ticks);
     }
 

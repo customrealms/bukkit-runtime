@@ -1,14 +1,15 @@
 package io.projopenrealms.runtime;
 
-import javax.script.Bindings;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 
 public interface Global {
 
     /**
      * Initializes the global with the runtime it will exist in
-     * @param bindings the global bindings object to append to
+     * @param context the GraalJS context
      */
-    void init(Bindings bindings);
+    void init(Context context);
 
     /**
      * Releases the global from its runtime
