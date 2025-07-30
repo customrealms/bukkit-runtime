@@ -31,6 +31,9 @@ public class Runtime {
         // Save the logger
         this.logger = logger;
 
+        // Suppress this error in case of plugin or server reloads (/reload confirm).
+        System.setProperty("polyglotimpl.AttachLibraryFailureAction", "ignore");
+
         // Create the GraalJS runtime
         Engine polyglotEngine = Engine.newBuilder()
                 .option("engine.WarnInterpreterOnly", "false")
@@ -57,9 +60,8 @@ public class Runtime {
     public void release() {
         // Release globals
         this.globals.forEach(Global::release);
-        this.globals.clear();
-        // Close the engine
         this.context.close();
+        this.context.getEngine().close();
     }
 
     /**

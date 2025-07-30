@@ -28,6 +28,12 @@ public class MainPlugin extends JavaPlugin {
         // Create a logger instance that will be used within the JavaScript runtime
         Logger logger = new DefaultLogger(this.getLogger());
 
+        // Make sure the runtime is not already initialized
+        // Also makes sure that reloading will work
+        if (this.runtime != null) {
+            this.runtime.release();
+        }
+
         // Create the runtime
         this.runtime = new Runtime(logger,
                 // Add globals to the runtime
