@@ -3,9 +3,7 @@ package io.customrealms.runtime.globals;
 import io.customrealms.runtime.Global;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.openjdk.nashorn.api.scripting.JSObject;
-import javax.script.Bindings;
-import java.util.function.BiFunction;
+import org.graalvm.polyglot.Value;
 
 public class BukkitCommands implements Global {
     /**
@@ -17,8 +15,9 @@ public class BukkitCommands implements Global {
         this.plugin = plugin;
     }
 
-    public void init(Bindings bindings) {
-        bindings.put("__commands_register", (BiFunction<String, JSObject, Boolean>)this::jsRegisterCommandHandler);
+    public void init(Value bindings) {
+        bindings.putMember("__commands_register", new JSFunction(args ->
+                this.jsRegisterCommandHandler(args[0].asString(), args[1])));
     }
 
     /**
@@ -26,7 +25,7 @@ public class BukkitCommands implements Global {
      */
     public void release() {}
 
-    public boolean jsRegisterCommandHandler(String name, JSObject handler) {
+    public boolean jsRegisterCommandHandler(String name, Value handler) {
         // Get the command with the provided name. It must be in the plugin.yml file.
         PluginCommand command = this.plugin.getCommand(name);
         if (command == null) {
@@ -34,7 +33,7 @@ public class BukkitCommands implements Global {
         }
 
         // Add an executor to the command
-        command.setExecutor((sender, cmd, label, args) -> (Boolean)handler.call(null, sender, label, args));
+        command.setExecutor((sender, cmd, label, args) -> handler.execute(sender, label, args).asBoolean());
         return true;
     }
 }

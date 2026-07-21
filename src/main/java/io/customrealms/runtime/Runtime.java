@@ -1,21 +1,17 @@
 package io.customrealms.runtime;
 
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.openjdk.nashorn.api.scripting.NashornScriptEngine;
-import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotException;
+import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.HostAccess;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Runtime {
     /**
-     * The Nashorn script engine
+     * The GraalVM JavaScript context
      */
-    private final NashornScriptEngine engine;
+    private final Context context;
 
     /**
      * The logger to use for the runtime console and errors
@@ -35,24 +31,26 @@ public class Runtime {
         // Save the logger
         this.logger = logger;
 
-        // Create the Nashorn runtime
-        ScriptEngineManager manager = new ScriptEngineManager();
-        manager.registerEngineName("nashorn", new NashornScriptEngineFactory());
-        this.engine = (NashornScriptEngine)manager.getEngineByName("nashorn");
+        // Create the GraalVM JavaScript runtime
+        this.context = Context.newBuilder("js")
+                .allowExperimentalOptions(true)
+                .allowHostAccess(HostAccess.ALL)
+                .allowHostClassLookup(className -> true)
+                .build();
 
         // Add all the globals
         this.globals.addAll(Arrays.asList(globals));
 
-        // Create the bindings for the engine
-        Bindings bindings = this.engine.createBindings();
+        // Create the bindings for the context
+        Value bindings = this.context.getBindings("js");
 
         // Initialize all the globals
         for (Global global : this.globals) {
             global.init(bindings);
         }
 
-        // Set the engine scope bindings
-        this.engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+        // Provide a Nashorn-style Java.resolve helper for existing scripts.
+        this.context.eval("js", "if (typeof Java !== 'undefined' && typeof Java.resolve === 'undefined') { Java.resolve = Java.type; }");
     }
 
     /**
@@ -62,6 +60,7 @@ public class Runtime {
         // Release globals
         this.globals.forEach(Global::release);
         this.globals.clear();
+        this.context.close();
     }
 
     /**
@@ -70,8 +69,8 @@ public class Runtime {
      */
     private void execute(String script) {
         try {
-            this.engine.eval(script);
-        } catch (ScriptException e) {
+            this.context.eval("js", script);
+        } catch (PolyglotException e) {
             e.printStackTrace();
         }
     }

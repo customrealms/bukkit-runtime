@@ -1,7 +1,6 @@
 package io.customrealms.runtime.globals;
 
 import java.util.HashMap;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import io.customrealms.runtime.Global;
 import io.customrealms.runtime.Logger;
@@ -12,8 +11,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.openjdk.nashorn.api.scripting.JSObject;
-import javax.script.Bindings;
+import org.graalvm.polyglot.Value;
 
 class RegisteredHandlerData {
     public Listener listener;
@@ -41,16 +39,20 @@ public class BukkitEvents implements Global {
      * Each event handler registered spawns a separate Bukkit listener. They are
      * all stored in this map, associated to the issued listener handle integer.
      */
-    private HashMap<Integer, RegisteredHandlerData> handlers = new HashMap<>();
+    private final HashMap<Integer, RegisteredHandlerData> handlers = new HashMap<>();
 
     public BukkitEvents(JavaPlugin plugin, Logger logger) {
         this.plugin = plugin;
         this.logger = logger;
     }
 
-    public void init(Bindings bindings) {
-        bindings.put("__events_register", (BiFunction<String, JSObject, Integer>)this::jsRegisterEventHandler);
-        bindings.put("__events_unregister", (Consumer<Integer>)this::jsUnregisterEventHandler);
+    public void init(Value bindings) {
+        bindings.putMember("__events_register", new JSFunction(args ->
+                this.jsRegisterEventHandler(args[0].asString(), args[1])));
+        bindings.putMember("__events_unregister", new JSFunction(args -> {
+            this.jsUnregisterEventHandler(args[0].asInt());
+            return null;
+        }));
     }
 
     /**
@@ -70,13 +72,13 @@ public class BukkitEvents implements Global {
     }
 
     @SuppressWarnings("unchecked")
-    public Integer jsRegisterEventHandler(String eventClassName, JSObject handler) {
+    public Integer jsRegisterEventHandler(String eventClassName, Value handler) {
 
         // Create the registered handle
         final RegisteredHandlerData registered_handle = new RegisteredHandlerData();
         registered_handle.listener = new Listener() {};
         registered_handle.func = (Event event) -> {
-            handler.call(null, event);
+            handler.executeVoid(event);
         };
 
         // Resolve the class for the event type classpath
