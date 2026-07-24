@@ -1,11 +1,15 @@
 package io.customrealms.runtime.globals;
 
-import io.customrealms.runtime.Global;
-import io.customrealms.runtime.Logger;
-import io.customrealms.runtime.SafeExecutor;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.graalvm.polyglot.Value;
+
+import io.customrealms.runtime.Global;
+import io.customrealms.runtime.Logger;
+import io.customrealms.runtime.SafeExecutor;
 
 public class Scheduler implements Global {
     /**
@@ -39,6 +43,18 @@ public class Scheduler implements Global {
             this.jsClearInterval(args[0].asInt());
             return null;
         }));
+
+        bindings.putMember(
+            "__main_thread",
+            new JSFunction(args -> {
+                if (args.length == 0 || !args[0].canExecute()) {
+                    throw new IllegalArgumentException(
+                        "__main_thread requires a JavaScript function"
+                    );
+                }
+                return new MainThreadFunction(args[0]);
+            })
+        );
     }
 
     /**
@@ -68,4 +84,84 @@ public class Scheduler implements Global {
         Bukkit.getScheduler().cancelTask(handle);
     }
 
+    /**
+     * Executes a JavaScript callback on Bukkit's primary thread.
+     *
+     * If already on the primary thread, it executes immediately.
+     *
+     * If invoked from another thread, it schedules the callback and blocks only
+     * the calling background thread until the callback finishes. This preserves
+     * Function/BiFunction return values and CompletableFuture ordering.
+     */
+    private Object executeOnMainThread(Value callback, Object... arguments) {
+        if (Bukkit.isPrimaryThread()) {
+            return executeCallback(callback, arguments);
+        }
+
+        CompletableFuture<Object> result = new CompletableFuture<>();
+
+        Bukkit.getScheduler().runTask(this.plugin, () -> {
+            try {
+                result.complete(executeCallback(callback, arguments));
+            } catch (Throwable throwable) {
+                result.completeExceptionally(throwable);
+            }
+        });
+
+        return result.join();
+    }
+
+    /**
+     * Invokes the JavaScript function and converts its result into a normal
+     * Java value where possible.
+     */
+    private Object executeCallback(Value callback, Object... arguments) {
+        Value result = callback.execute(arguments);
+
+        if (result == null || result.isNull()) {
+            return null;
+        }
+
+        if (result.isHostObject()) {
+            return result.asHostObject();
+        }
+
+        if (result.isBoolean()) {
+            return result.asBoolean();
+        }
+
+        if (result.isString()) {
+            return result.asString();
+        }
+
+        if (result.fitsInInt()) {
+            return result.asInt();
+        }
+
+        if (result.fitsInLong()) {
+            return result.asLong();
+        }
+
+        if (result.fitsInDouble()) {
+            return result.asDouble();
+        }
+
+        // Graal may convert ordinary JS arrays/objects into List/Map-like
+        // values depending on the configured host access.
+        return result.as(Object.class);
+    }
+
+    private final class MainThreadFunction implements Function<Object, Object> {
+
+        private final Value callback;
+
+        private MainThreadFunction(Value callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        public Object apply(Object value) {
+            return executeOnMainThread(this.callback, value);
+        }
+    }
 }

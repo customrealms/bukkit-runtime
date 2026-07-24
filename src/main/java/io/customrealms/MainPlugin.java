@@ -7,7 +7,7 @@ import io.customrealms.runtime.Runtime;
 import io.customrealms.runtime.globals.BukkitCommands;
 import io.customrealms.runtime.globals.BukkitEvents;
 import io.customrealms.runtime.globals.Console;
-import io.customrealms.runtime.globals.Math;
+import io.customrealms.runtime.globals.Plugin;
 import io.customrealms.runtime.globals.Scheduler;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -35,7 +35,7 @@ public class MainPlugin extends JavaPlugin {
                 new BukkitEvents(this, logger),
                 new Scheduler(this, logger),
                 new Console(logger),
-                new Math()
+                new Plugin(this)
         );
 
         // Load the code bundled into the JAR file
