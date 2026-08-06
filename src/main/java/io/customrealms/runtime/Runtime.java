@@ -31,11 +31,22 @@ public class Runtime {
         // Save the logger
         this.logger = logger;
 
+        // Configure the host access for the runtime
+        HostAccess hostAccess = HostAccess.newBuilder(HostAccess.ALL)
+            .targetTypeMapping(
+                Double.class,
+                Float.class,
+                d -> d >= -Float.MAX_VALUE && d <= Float.MAX_VALUE,
+                Double::floatValue
+            )
+            .build();
+
         // Create the GraalVM JavaScript runtime
         this.context = Context.newBuilder("js")
                 .allowExperimentalOptions(true)
-                .allowHostAccess(HostAccess.ALL)
+                .allowHostAccess(hostAccess)
                 .allowHostClassLookup(className -> true)
+                .option("engine.WarnInterpreterOnly", "false")
                 .build();
 
         // Add all the globals
