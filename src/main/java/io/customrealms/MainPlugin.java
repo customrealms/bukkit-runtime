@@ -4,6 +4,7 @@ import io.customrealms.resource.Resource;
 import io.customrealms.runtime.DefaultLogger;
 import io.customrealms.runtime.Logger;
 import io.customrealms.runtime.Runtime;
+import io.customrealms.runtime.RuntimeExecutor;
 import io.customrealms.runtime.globals.BukkitCommands;
 import io.customrealms.runtime.globals.BukkitEvents;
 import io.customrealms.runtime.globals.Console;
@@ -29,6 +30,9 @@ public class MainPlugin extends JavaPlugin {
         // Create a logger instance that will be used within the JavaScript runtime
         Logger logger = new DefaultLogger(this.getLogger());
 
+        // Create the runtime executor
+        RuntimeExecutor executor = new RuntimeExecutor(this, logger);
+
         // Create the runtime
         this.runtime = new Runtime(logger,
                 // Add globals to the runtime
@@ -37,7 +41,7 @@ public class MainPlugin extends JavaPlugin {
                 new Scheduler(this, logger),
                 new Console(logger),
                 new Plugin(this),
-                new Files()
+                new Files(executor)
         );
 
         // Load the code bundled into the JAR file
