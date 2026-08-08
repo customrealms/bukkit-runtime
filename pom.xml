@@ -13,7 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <src.dir>src/main/java</src.dir>
+        <src.dir>src/java</src.dir>
         <graalvm.version>24.1.2</graalvm.version>
     </properties>
 
@@ -52,7 +52,7 @@
         </plugins>
         <resources>
             <resource>
-                <directory>src/main/resources</directory>
+                <directory>src/java/resources</directory>
                 <filtering>true</filtering>
             </resource>
         </resources>
