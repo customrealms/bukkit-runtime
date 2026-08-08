@@ -19,9 +19,8 @@ public class Runtime {
 
     /**
      * Constructs a new Runtime instance with the given globals
-     * @param globals the globals to insert into the runtime
      */
-    public Runtime(Global... globals) {
+    public Runtime() {
         // Configure the host access for the runtime
         HostAccess hostAccess = HostAccess.newBuilder(HostAccess.ALL)
             .targetTypeMapping(
@@ -39,7 +38,13 @@ public class Runtime {
                 .allowHostClassLookup(className -> true)
                 .option("engine.WarnInterpreterOnly", "false")
                 .build();
+    }
 
+    /**
+     * Initializes the runtime with the given globals
+     * @param globals the globals to insert into the runtime
+     */
+    public void init(Global... globals) {
         // Add all the globals
         this.globals.addAll(Arrays.asList(globals));
 
@@ -71,5 +76,9 @@ public class Runtime {
      */
     public void execute(String script) {
         this.context.eval("js", script);
+    }
+
+    public Context getContext() {
+        return this.context;
     }
 }

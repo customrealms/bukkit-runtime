@@ -35,6 +35,9 @@ public class Scheduler implements Global {
         bindings.putMember("clearTimeout", (ProxyExecutable) this::jsClearTimeout);
         bindings.putMember("setInterval", (ProxyExecutable) this::jsSetInterval);
         bindings.putMember("clearInterval", (ProxyExecutable) this::jsClearInterval);
+        bindings.putMember("setImmediate", (ProxyExecutable) this::jsSetImmediate);
+        bindings.putMember("clearImmediate", (ProxyExecutable) this::jsClearImmediate);
+        bindings.putMember("queueMicrotask", (ProxyExecutable) this::jsQueueMicrotask);
         bindings.putMember("__main_thread", (ProxyExecutable) this::jsMainThread);
     }
 
@@ -68,6 +71,25 @@ public class Scheduler implements Global {
     public Void jsClearInterval(Value... args) {
         int handle = args[0].asInt();
         Bukkit.getScheduler().cancelTask(handle);
+        return null;
+    }
+
+    public Integer jsSetImmediate(Value... args) {
+        Value handler = args[0];
+        Runnable task = () -> this.executor.executeSafely(() -> handler.executeVoid());
+        return Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, task, 1);
+    }
+
+    public Void jsClearImmediate(Value... args) {
+        int handle = args[0].asInt();
+        Bukkit.getScheduler().cancelTask(handle);
+        return null;
+    }
+
+    public Void jsQueueMicrotask(Value... args) {
+        Value handler = args[0];
+        Runnable task = () -> this.executor.executeSafely(() -> handler.executeVoid());
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, task);
         return null;
     }
 

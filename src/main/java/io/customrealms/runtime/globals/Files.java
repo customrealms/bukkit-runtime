@@ -27,12 +27,12 @@ public class Files implements Global {
 
     public void init(Value bindings) {
         HashMap<String, Object> files = new HashMap<>();
-        files.put("read", this.executor.wrapPromise(this::jsReadFile));
-        files.put("readdir", this.executor.wrapPromise(this::jsReadDir));
-        files.put("exists", this.executor.wrapPromise(this::jsExists));
-        files.put("remove", this.executor.wrapPromise(this::jsRemove));
-        files.put("mkdir", this.executor.wrapPromise(this::jsMkdir));
-        files.put("write", this.executor.wrapPromise(this::jsWriteFile));
+        files.put("read", this.executor.promiseFunction(this::jsReadFile));
+        files.put("readdir", this.executor.promiseFunction(this::jsReadDir));
+        files.put("exists", this.executor.promiseFunction(this::jsExists));
+        files.put("remove", this.executor.promiseFunction(this::jsRemove));
+        files.put("mkdir", this.executor.promiseFunction(this::jsMkdir));
+        files.put("write", this.executor.promiseFunction(this::jsWriteFile));
 
         bindings.putMember("__fs", ProxyObject.fromMap(files));
     }

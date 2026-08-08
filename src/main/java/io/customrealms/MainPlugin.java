@@ -35,12 +35,14 @@ public class MainPlugin extends JavaPlugin {
         // Create a logger instance that will be used within the JavaScript runtime
         Logger logger = new DefaultLogger(this.getLogger());
 
-        // Create the runtime executor
-        this.executor = new RuntimeExecutor(this, logger);
-
         // Create the runtime
-        this.runtime = new Runtime(
-            // Add globals to the runtime
+        this.runtime = new Runtime();
+
+        // Create the runtime executor
+        this.executor = new RuntimeExecutor(this, this.runtime.getContext(), logger);
+
+        // Initialize the runtime with the globals
+        this.runtime.init(
             new BukkitCommands(this),
             new BukkitEvents(this, this.executor, logger),
             new Scheduler(this, this.executor),
