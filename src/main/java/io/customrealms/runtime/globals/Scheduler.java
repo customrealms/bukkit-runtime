@@ -6,10 +6,10 @@ import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
 
 import io.customrealms.runtime.Global;
-import io.customrealms.runtime.Logger;
-import io.customrealms.runtime.SafeExecutor;
+import io.customrealms.runtime.RuntimeExecutor;
 
 public class Scheduler implements Global {
     /**
@@ -18,43 +18,24 @@ public class Scheduler implements Global {
     private final JavaPlugin plugin;
 
     /**
-     * The logger for the runtime
+     * The runtime executor for this plugin.
      */
-    private final Logger logger;
+    private final RuntimeExecutor executor;
 
     private static final long TICKS_PER_SECOND = 20;
     private static final long MS_PER_TICK = 1000 / TICKS_PER_SECOND;
 
-    public Scheduler(JavaPlugin plugin, Logger logger) {
+    public Scheduler(JavaPlugin plugin, RuntimeExecutor executor) {
         this.plugin = plugin;
-        this.logger = logger;
+        this.executor = executor;
     }
 
     public void init(Value bindings) {
-        bindings.putMember("setTimeout", new JSFunction(args ->
-                this.jsSetTimeout(args[0], args[1].asInt())));
-        bindings.putMember("clearTimeout", new JSFunction(args -> {
-            this.jsClearTimeout(args[0].asInt());
-            return null;
-        }));
-        bindings.putMember("setInterval", new JSFunction(args ->
-                this.jsSetInterval(args[0], args[1].asInt())));
-        bindings.putMember("clearInterval", new JSFunction(args -> {
-            this.jsClearInterval(args[0].asInt());
-            return null;
-        }));
-
-        bindings.putMember(
-            "__main_thread",
-            new JSFunction(args -> {
-                if (args.length == 0 || !args[0].canExecute()) {
-                    throw new IllegalArgumentException(
-                        "__main_thread requires a JavaScript function"
-                    );
-                }
-                return new MainThreadFunction(args[0]);
-            })
-        );
+        bindings.putMember("setTimeout", (ProxyExecutable) this::jsSetTimeout);
+        bindings.putMember("clearTimeout", (ProxyExecutable) this::jsClearTimeout);
+        bindings.putMember("setInterval", (ProxyExecutable) this::jsSetInterval);
+        bindings.putMember("clearInterval", (ProxyExecutable) this::jsClearInterval);
+        bindings.putMember("__main_thread", (ProxyExecutable) this::jsMainThread);
     }
 
     /**
@@ -62,26 +43,39 @@ public class Scheduler implements Global {
      */
     public void release() {}
 
-    public Integer jsSetTimeout(Value handler, Integer milliseconds) {
+    public Integer jsSetTimeout(Value... args) {
+        Value handler = args[0];
+        Integer milliseconds = args[1].asInt();
         long ticks = milliseconds / MS_PER_TICK;
-        return Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
-            SafeExecutor.executeSafely(() -> handler.executeVoid(), this.logger);
-        }, ticks);
+        Runnable task = () -> this.executor.executeSafely(() -> handler.executeVoid());
+        return Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, task, ticks);
     }
 
-    public void jsClearTimeout(int handle) {
+    public Void jsClearTimeout(Value... args) {
+        int handle = args[0].asInt();
         Bukkit.getScheduler().cancelTask(handle);
+        return null;
     }
 
-    public Integer jsSetInterval(Value handler, Integer milliseconds) {
+    public Integer jsSetInterval(Value... args) {
+        Value handler = args[0];
+        Integer milliseconds = args[1].asInt();
         long ticks = milliseconds / MS_PER_TICK;
-        return Bukkit.getScheduler().scheduleSyncRepeatingTask(this.plugin, () -> {
-            SafeExecutor.executeSafely(() -> handler.executeVoid(), this.logger);
-        }, ticks, ticks);
+        Runnable task = () -> this.executor.executeSafely(() -> handler.executeVoid());
+        return Bukkit.getScheduler().scheduleSyncRepeatingTask(this.plugin, task, ticks, ticks);
     }
 
-    public void jsClearInterval(int handle) {
+    public Void jsClearInterval(Value... args) {
+        int handle = args[0].asInt();
         Bukkit.getScheduler().cancelTask(handle);
+        return null;
+    }
+
+    public Object jsMainThread(Value... args) {
+        if (args.length == 0 || !args[0].canExecute()) {
+            throw new IllegalArgumentException("__main_thread requires a JavaScript function");
+        }
+        return new MainThreadFunction(args[0]);
     }
 
     /**

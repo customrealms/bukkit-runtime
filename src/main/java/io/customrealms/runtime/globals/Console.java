@@ -3,9 +3,10 @@ package io.customrealms.runtime.globals;
 import io.customrealms.runtime.Global;
 import io.customrealms.runtime.Logger;
 import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
-import java.util.*;
+import java.util.HashMap;
 
 public class Console implements Global {
     /**
@@ -19,9 +20,9 @@ public class Console implements Global {
 
     public void init(Value bindings) {
         HashMap<String, Object> console = new HashMap<>();
-        console.put("log", new JSFunction(this::jsConsoleLog));
-        console.put("warn", new JSFunction(this::jsConsoleWarn));
-        console.put("error", new JSFunction(this::jsConsoleError));
+        console.put("log", (ProxyExecutable) this::jsConsoleLog);
+        console.put("warn", (ProxyExecutable) this::jsConsoleWarn);
+        console.put("error", (ProxyExecutable) this::jsConsoleError);
 
         bindings.putMember("console", ProxyObject.fromMap(console));
     }

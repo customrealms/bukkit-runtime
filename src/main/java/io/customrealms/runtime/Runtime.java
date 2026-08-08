@@ -1,7 +1,6 @@
 package io.customrealms.runtime;
 
 import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.HostAccess;
 import java.util.ArrayList;
@@ -14,23 +13,15 @@ public class Runtime {
     private final Context context;
 
     /**
-     * The logger to use for the runtime console and errors
-     */
-    private final Logger logger;
-
-    /**
      * Globals inserted to the runtime
      */
     private final ArrayList<Global> globals = new ArrayList<>();
 
     /**
-     * Constructs a new Runtime instance with a custom logger
-     * @param logger the logger to use for the runtime console and errors
+     * Constructs a new Runtime instance with the given globals
+     * @param globals the globals to insert into the runtime
      */
-    public Runtime(Logger logger, Global... globals) {
-        // Save the logger
-        this.logger = logger;
-
+    public Runtime(Global... globals) {
         // Configure the host access for the runtime
         HostAccess hostAccess = HostAccess.newBuilder(HostAccess.ALL)
             .targetTypeMapping(
@@ -78,21 +69,7 @@ public class Runtime {
      * Executes a string of JavaScript code in the executor and does not return any result
      * @param script the JavaScript contents to evaluate
      */
-    private void execute(String script) {
-        try {
-            this.context.eval("js", script);
-        } catch (PolyglotException e) {
-            e.printStackTrace();
-        }
+    public void execute(String script) {
+        this.context.eval("js", script);
     }
-
-    /**
-     * Executes a script and logs any errors to the runtime logger, protecting the caller
-     * from needing to handle exceptions
-     * @param script the script to execute
-     */
-    public void executeSafely(String script) {
-        SafeExecutor.executeSafely(() -> this.execute(script), this.logger);
-    }
-
 }

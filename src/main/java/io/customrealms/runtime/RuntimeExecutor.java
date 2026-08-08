@@ -3,8 +3,7 @@ package io.customrealms.runtime;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.graalvm.polyglot.Value;
-
-import io.customrealms.runtime.globals.JSFunction;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -17,7 +16,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class RuntimeExecutor {
-    private final ExecutorService ioExecutor = Executors.newCachedThreadPool();
+    /**
+     * The executor service for asynchronous operations
+     */
+    private final ExecutorService ioExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
     /**
      * The Java plugin we're running within
@@ -34,25 +36,44 @@ public class RuntimeExecutor {
         this.logger = logger;
     }
 
-    private <T> void executeOnMainThread(Runnable task) {
-        Runnable wrappedTask = () -> {
-            SafeExecutor.executeSafely(task, this.logger);
+    public void release() {
+        this.ioExecutor.shutdownNow();
+    }
+
+    /**
+     * Safely executes plugin JavaScript code, and handles uncaught exceptions
+     * @param runnable the runnable to execute
+     * @param logger the logger to output errors to
+     */
+    public void executeSafely(Runnable runnable) {
+        Runnable task = () -> {
+            try {
+                runnable.run();
+            } catch (Exception ex) {
+                if (this.logger != null) {
+                    this.logger.logUnhandledException(ex);
+                }
+            }
         };
         if (Bukkit.isPrimaryThread()) {
-            wrappedTask.run();
+            task.run();
         } else {
-            Bukkit.getScheduler().runTask(this.plugin, wrappedTask);
+            Bukkit.getScheduler().runTask(this.plugin, task);
         }
     }
 
-    private <T> void executePromise(Supplier<T> supplier, Consumer<T> resolve, Consumer<Throwable> reject) {
+    private <T> void executePromise(
+        Supplier<T> supplier,
+        Consumer<? super T> resolve,
+        Consumer<? super Throwable> reject
+    ) {
         CompletableFuture
             .supplyAsync(supplier, this.ioExecutor)
             .whenComplete((result, error) -> {
                 if (error != null) {
-                    this.executeOnMainThread(() -> reject.accept(this.unwrapCompletionException(error)));
+                    this.executeSafely(() -> reject.accept(this.unwrapCompletionException(error)));
                 } else {
-                    this.executeOnMainThread(() -> resolve.accept(result));
+                    this.executeSafely(() -> resolve.accept(result));
                 }
             });
     }
@@ -69,10 +90,10 @@ public class RuntimeExecutor {
         return error;
     }
 
-    public <T> JSFunction wrapPromise(Function<Value[], Supplier<T>> prepare) {
-        return new JSFunction(args -> {
-            if (args.length < 3) {
-                throw new IllegalArgumentException("Promise must have at least 3 arguments");
+    public <T> ProxyExecutable wrapPromise(Function<Value[], Supplier<T>> prepare) {
+        return args -> {
+            if (args.length < 2) {
+                throw new IllegalArgumentException("Promise must have at least 2 arguments");
             }
 
             Value resolve = args[args.length - 2];
@@ -96,6 +117,6 @@ public class RuntimeExecutor {
             );
 
             return null;
-        });
+        };
     }
 }

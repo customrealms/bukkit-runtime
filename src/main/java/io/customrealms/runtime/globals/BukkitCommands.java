@@ -4,6 +4,7 @@ import io.customrealms.runtime.Global;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
 
 public class BukkitCommands implements Global {
     /**
@@ -16,8 +17,9 @@ public class BukkitCommands implements Global {
     }
 
     public void init(Value bindings) {
-        bindings.putMember("__commands_register", new JSFunction(args ->
-                this.jsRegisterCommandHandler(args[0].asString(), args[1])));
+        bindings.putMember("__commands_register", (ProxyExecutable) args -> {
+            return this.jsRegisterCommandHandler(args[0].asString(), args[1]);
+        });
     }
 
     /**

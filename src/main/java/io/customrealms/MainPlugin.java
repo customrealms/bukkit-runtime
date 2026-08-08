@@ -25,38 +25,49 @@ public class MainPlugin extends JavaPlugin {
      */
     private Runtime runtime;
 
+    /**
+     * The runtime executor for this plugin.
+     */
+    private RuntimeExecutor executor;
+
     @Override
     public void onEnable() {
         // Create a logger instance that will be used within the JavaScript runtime
         Logger logger = new DefaultLogger(this.getLogger());
 
         // Create the runtime executor
-        RuntimeExecutor executor = new RuntimeExecutor(this, logger);
+        this.executor = new RuntimeExecutor(this, logger);
 
         // Create the runtime
-        this.runtime = new Runtime(logger,
-                // Add globals to the runtime
-                new BukkitCommands(this),
-                new BukkitEvents(this, logger),
-                new Scheduler(this, logger),
-                new Console(logger),
-                new Plugin(this),
-                new Files(executor)
+        this.runtime = new Runtime(
+            // Add globals to the runtime
+            new BukkitCommands(this),
+            new BukkitEvents(this, this.executor, logger),
+            new Scheduler(this, this.executor),
+            new Console(logger),
+            new Plugin(this),
+            new Files(this.executor)
         );
 
         // Load the code bundled into the JAR file
-        String source_code = new Resource("plugin.js").getStringContents();
-        if (source_code == null) {
+        String sourceCode = new Resource("plugin.js").getStringContents();
+        if (sourceCode == null) {
             this.getLogger().log(Level.SEVERE, "JavaScript source code has not been loaded!");
             return;
         }
 
         // Execute the source code
-        this.runtime.executeSafely(source_code);
+        this.executor.executeSafely(() -> this.runtime.execute(sourceCode));
     }
 
     @Override
     public void onDisable() {
+        // Release the runtime executor
+        if (this.executor != null) {
+            this.executor.release();
+            this.executor = null;
+        }
+
         // Release the runtime
         if (this.runtime != null) {
             this.runtime.release();
