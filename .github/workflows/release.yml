@@ -11,7 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build the Maven Project
+    name: Build Runtime JAR
     steps:
       - uses: actions/checkout@v2
 
@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '17'
+          java-version: '25'
           java-package: jdk
 
       - name: Build Maven project
@@ -50,6 +50,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
+    name: Publish TypeScript Types
     steps:
       - name: Checkout
         uses: actions/checkout@v2
