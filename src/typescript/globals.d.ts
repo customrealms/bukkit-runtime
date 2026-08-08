@@ -1,6 +1,6 @@
 /// <reference path="./bukkit.d.ts" />
 
-// The globals found in this file are documented here, but implemented in Java in the `bukkit-runtime` project.
+// The globals found in this file are documented here, but implemented in Java in the `runtime` project.
 // They are dynamically inserted as global variables / functions in the CustomRealms runtime
 
 declare namespace Java {

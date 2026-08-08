@@ -19,7 +19,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/customrealms/bukkit-runtime.git",
+        "url": "git+https://github.com/customrealms/runtime.git",
         "directory": "src/typescript"
     },
     "publishConfig": {

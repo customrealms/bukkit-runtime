@@ -1,4 +1,4 @@
-# bukkit-runtime
+# runtime
 
 <img src="https://github.com/customrealms/brand/blob/master/icon-solid/icon-solid.png" width="200" alt="CustomRealms Logo" />
 
@@ -28,4 +28,4 @@ You can create CustomRealms plugins without **customrealms/core**, but you'll fi
 
 ## Contributing
 
-We need your help to solve bugs, implement new features, and optimize the entire system. If you want to help, please join our [Discord](https://discord.com/invite/bbS2ACdTCM) and/or check out the [Issues tab](https://github.com/customrealms/bukkit-runtime/issues).
+We need your help to solve bugs, implement new features, and optimize the entire system. If you want to help, please join our [Discord](https://discord.com/invite/bbS2ACdTCM) and/or check out the [Issues tab](https://github.com/customrealms/runtime/issues).
