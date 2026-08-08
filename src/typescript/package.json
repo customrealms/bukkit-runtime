@@ -1,0 +1,28 @@
+{
+    "name": "@customrealms/runtime-types",
+    "version": "1.0.0",
+    "description": "TypeScript definitions for the CustomRealms JavaScript runtime and Bukkit API globals.",
+    "license": "MIT",
+    "types": "./index.d.ts",
+    "files": [
+        "*.d.ts",
+        "README.md",
+        "LICENSE"
+    ],
+    "keywords": [
+        "customrealms",
+        "minecraft",
+        "bukkit",
+        "paper",
+        "typescript",
+        "types"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/customrealms/bukkit-runtime.git",
+        "directory": "src/typescript"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+  }

@@ -2,7 +2,11 @@ on:
   release:
     types: [created]
 
-name: Build JAR files
+name: Release
+
+permissions:
+  id-token: write
+  contents: write
 
 jobs:
   build:
@@ -43,3 +47,31 @@ jobs:
           asset_path: ./target/bukkit-runtime.jar
           asset_name: bukkit-runtime.jar
           asset_content_type: application/octet-stream
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Update version in package.json
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const packageJson = JSON.parse(fs.readFileSync('src/typescript/package.json', 'utf8'));
+            packageJson.version = '${{ github.event.release.tag_name }}'.replace(/^v/, '');
+            fs.writeFileSync('src/typescript/package.json', JSON.stringify(packageJson, null, 2));
+
+      - name: Publish to npm
+        working-directory: src/typescript
+        run: npm publish
