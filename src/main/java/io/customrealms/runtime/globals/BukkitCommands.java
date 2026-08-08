@@ -17,9 +17,7 @@ public class BukkitCommands implements Global {
     }
 
     public void init(Value bindings) {
-        bindings.putMember("__commands_register", (ProxyExecutable) args -> {
-            return this.jsRegisterCommandHandler(args[0].asString(), args[1]);
-        });
+        bindings.putMember("__commands_register", (ProxyExecutable) this::jsRegister);
     }
 
     /**
@@ -27,7 +25,10 @@ public class BukkitCommands implements Global {
      */
     public void release() {}
 
-    public boolean jsRegisterCommandHandler(String name, Value handler) {
+    public Boolean jsRegister(Value... args) {
+        String name = args[0].asString();
+        Value handler = args[1];
+
         // Get the command with the provided name. It must be in the plugin.yml file.
         PluginCommand command = this.plugin.getCommand(name);
         if (command == null) {
@@ -35,7 +36,7 @@ public class BukkitCommands implements Global {
         }
 
         // Add an executor to the command
-        command.setExecutor((sender, cmd, label, args) -> handler.execute(sender, label, args).asBoolean());
+        command.setExecutor((sender, cmd, label, commandArgs) -> handler.execute(sender, label, commandArgs).asBoolean());
         return true;
     }
 }

@@ -53,13 +53,8 @@ public class BukkitEvents implements Global {
     }
 
     public void init(Value bindings) {
-        bindings.putMember("__events_register", (ProxyExecutable) args -> {
-            return this.jsRegisterEventHandler(args[0].asString(), args[1]);
-        });
-        bindings.putMember("__events_unregister", (ProxyExecutable) args -> {
-            this.jsUnregisterEventHandler(args[0].asInt());
-            return null;
-        });
+        bindings.putMember("__events_register", (ProxyExecutable) this::jsRegister);
+        bindings.putMember("__events_unregister", (ProxyExecutable) this::jsUnregister);
     }
 
     /**
@@ -76,7 +71,10 @@ public class BukkitEvents implements Global {
     }
 
     @SuppressWarnings("unchecked")
-    public Integer jsRegisterEventHandler(String eventClassName, Value handler) {
+    public Integer jsRegister(Value... args) {
+        String eventClassName = args[0].asString();
+        Value handler = args[1];
+
         // Create the registered handle
         final RegisteredHandlerData registered_handle = new RegisteredHandlerData();
         registered_handle.listener = new Listener() {};
@@ -113,9 +111,11 @@ public class BukkitEvents implements Global {
         return handle;
     }
 
-    public void jsUnregisterEventHandler(int handle) {
+    public Void jsUnregister(Value... args) {
+        int handle = args[0].asInt();
+
         // Get the handle index
-        if (!this.handlers.containsKey(handle)) return;
+        if (!this.handlers.containsKey(handle)) return null;
 
         // Get the registered handle
         RegisteredHandlerData registered_handle = this.handlers.get(handle);
@@ -125,6 +125,7 @@ public class BukkitEvents implements Global {
 
         // Unregister the Bukkit listener
         HandlerList.unregisterAll(registered_handle.listener);
+        return null;
     }
 
 }
